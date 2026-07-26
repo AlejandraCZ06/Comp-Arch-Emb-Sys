@@ -1,4 +1,4 @@
-// Write a program that sums the first 30 numbers and store them into register r1
+// Write a program that counts from 1 to 31
 // Run and test the program using https://cpulator.01xz.net/?sys=arm
 
 .global _start
