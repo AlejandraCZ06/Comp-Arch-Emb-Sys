@@ -1,7 +1,5 @@
 # Makefiles
 
-
-
 ## Goals
 
 The goal of these exercises is to practice with Makefiles
