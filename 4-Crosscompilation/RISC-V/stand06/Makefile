@@ -1,11 +1,11 @@
 
 
 
-CC =  riscv64-unknown-elf-gcc
+CC =  riscv32-unknown-elf-gcc
 CFLAGS = -Wall -Wextra -std=c11 -ffreestanding
-OBJCOPY =  riscv64-unknown-elf-objcopy
-OBJDUMP =  riscv64-unknown-elf-objdump
-LINK = riscv64-unknown-elf-ld
+OBJCOPY =  riscv32-unknown-elf-objcopy
+OBJDUMP =  riscv32-unknown-elf-objdump
+LINK = riscv32-unknown-elf-ld
 ARCH =  -march=rv32imc -mabi=ilp32
 LINKERSCRIPT = riscv-qemu.ld
 
@@ -35,7 +35,7 @@ build: myos.elf
 myos.elf: $(OBJS)
 	@echo $(OBJS) $(SRC)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@ 
-	riscv64-unknown-elf-size -A -x $@
+	riscv32-unknown-elf-size -A -x $@
 
 %.o: %.S
 	$(CC) $(CFLAGS) -c $^ -o $@ 
@@ -47,7 +47,7 @@ qemu: myos.elf
 	$(QEMU) -bios myos.elf 
 
 gdb: myos.elf
-	riscv64-elf-gdb myos.elf -ex "target remote :1234" -ex "tb _start" -ex "c"
+	riscv32-unknown-elf-gdb myos.elf -ex "target remote :1234" -ex "tb _start" -ex "c"
 
 clean:
 	rm -f *.o *.elf *.img

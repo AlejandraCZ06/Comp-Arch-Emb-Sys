@@ -33,13 +33,13 @@ CFLAGS += -g
 CFLAGS += -Wall
 
 # Level of optimization 2 (max = 3)
-CFLAGS += -O2
+CFLAGS += -O0
 
 
 # -- C linker flags ------------------------------------------------------------
 
 # Linker script file name
-LD_SCRIPT = linker_script
+LD_SCRIPT = linker_script.ld
 
 # Specify linker script to use
 LD_FLAGS = -T $(LD_SCRIPT)
