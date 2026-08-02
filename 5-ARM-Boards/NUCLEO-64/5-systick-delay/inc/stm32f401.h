@@ -1,5 +1,6 @@
 #ifndef __STM32F401_H__
 #define __STM32F401_H__
+#include <stdint.h>
 
 #define PERIPHERAL_BASE (0x40000000U) // Peripheral base address for STM32F4 reference manual  pg. 38
 #define AHB1_BASE (PERIPHERAL_BASE + 0x20000U) // Peripheral base address for STM32F4 reference manual  pg. 38
@@ -93,5 +94,16 @@ typedef struct {
 
 #define RCC ((volatile RCC_TypeDef *)RCC_BASE)
 
+#define SYS_BASE (0xE000E000U) 
+#define SYSTICK_BASE (SYS_BASE + 0x10U) // Peripheral base address for STM32F4 reference manual  pg. 38
+
+typedef struct {
+    volatile unsigned int STCSR; // SysTick Control and Status Register
+    volatile unsigned int STRVR; // SysTick Reload Value Register
+    volatile unsigned int STCVR; // SysTick Current Value Register
+    volatile unsigned int STCR; // SysTick Calibration Value Register
+} SysTick_TypeDef;
+
+#define SysTick ((volatile SysTick_TypeDef *)SYSTICK_BASE)
 
 #endif /* __STM32F401_H__ */

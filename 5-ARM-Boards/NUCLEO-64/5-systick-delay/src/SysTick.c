@@ -9,8 +9,6 @@ void SysTick_Init(void){
   SysTick->STCSR = 0x05; // Enable SysTick with processor clock
 
 }
-
-
 void SysTick_Delay_us(uint32_t delay){
     uint32_t ticks = (SYCLK / MICROSECONDS_PER_SECOND) * delay; // Calculate the number of ticks for the specified delay in microseconds
     uint32_t start_value = SysTick->STCVR; // Calculate the reload value for SysTick
