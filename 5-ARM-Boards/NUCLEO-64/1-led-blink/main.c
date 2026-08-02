@@ -2,22 +2,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define PERIPHERAL_BASE (0x40000000U)
-#define AHB1_BASE (PERIPHERAL_BASE + 0x20000U)
-#define GPIOA_BASE (AHB1_BASE + 0x0U)
-#define RCC_BASE (AHB1_BASE + 0x3800U)
+#define PERIPHERAL_BASE (0x40000000U) // Peripheral base address for STM32F4 reference manual  pg. 38
+#define AHB1_BASE (PERIPHERAL_BASE + 0x20000U) // Peripheral base address for STM32F4 reference manual  pg. 38
 
-#define RCC_AHB1ENR_OFFSET (0x30U)
-#define RCC_AHB1ENR ((volatile uint32_t*) (RCC_BASE + RCC_AHB1ENR_OFFSET))
-#define RCC_AHB1ENR_GPIOAEN (0x00U)
+#define GPIOA_BASE (AHB1_BASE) // Peripheral base address for STM32F4 reference manual  pg. 38
+#define RCC_BASE   (AHB1_BASE + 0x3800U) // Peripheral base address for STM32F4 reference manual  pg. 38
 
-#define GPIO_MODER_OFFSET (0x00U)
-#define GPIOA_MODER ((volatile uint32_t*) (GPIOA_BASE + GPIO_MODER_OFFSET))
-#define GPIO_MODER_MODER5 (10U)
-#define GPIO_ODR_OFFSET (0x14U)
-#define GPIOA_ODR ((volatile uint32_t*) (GPIOA_BASE + GPIO_ODR_OFFSET))
+#define RCC_AHB1ENR ((volatile uint32_t*) (RCC_BASE + 0x30u)) // Peripheral base address for STM32F4 reference manual  pg. 137
+#define RCC_AHB1ENR_GPIOAEN (0x00U) // Enable GPIOA clock in RCC_AHB1ENR register (bit 0) for STM32F4 reference manual  pg. 137
 
-#define LED_PIN 5
+#define GPIOA_MODER ((volatile uint32_t*) (GPIOA_BASE)) // Peripheral base address for STM32F4 reference manual  pg. 164
+#define GPIO_MODER_MODER5 (10U) // Set GPIOA pin 5 as output in GPIOA_MODER register (bits 10-11) for STM32F4 reference manual  pg. 164
+
+#define GPIOA_ODR ((volatile uint32_t*) (GPIOA_BASE + 0x14u)) // Peripheral base address for STM32F4 reference manual  pg. 164
+
+#define LED_PIN 5 // Pin 5 corresponds to the on-board LED on the NUCLEO-64 board
 
 
 int main()
