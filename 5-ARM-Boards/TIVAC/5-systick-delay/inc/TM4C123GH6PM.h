@@ -243,6 +243,16 @@ typedef struct {
 #define GPIOE ((volatile GPIO_TypeDef *) GPIOE_BASE)
 #define GPIOF ((volatile GPIO_TypeDef *) GPIOF_BASE)
 
+#define SYSPRV_BASE (0xE000E000U) 
+#define SYSTICK_BASE (SYSPRV_BASE + 0x10U) // Peripheral base address for STM32F4 reference manual  pg. 38
 
+typedef struct {
+    volatile unsigned int STCSR; // SysTick Control and Status Register
+    volatile unsigned int STRVR; // SysTick Reload Value Register
+    volatile unsigned int STCVR; // SysTick Current Value Register
+    volatile unsigned int STCR; // SysTick Calibration Value Register
+} SysTick_TypeDef;
+
+#define SysTick ((volatile SysTick_TypeDef *) SYSTICK_BASE)
 
 #endif /* __TM4C123GH6PM_H__ */
