@@ -16,17 +16,24 @@ SECTIONS
 			*(.rodata*);
 			*(.srodata*); 
 			. = ALIGN(4);
+			KEEP(*(.init))
+			KEEP(*(.fini))
+			*(.eh_frame)
+			*(.ARM.exidx)
     		_etext = .;
-			_sidata = .;
+
 			}	> FLASH
 			
-	
-	.data  : AT ( _sidata ) {  
+			_sidata = LOADADDR(.data);
+
+	.data  : {  
 				_sdata = .;
 				*(.data*);
 				*(.sdata*);
+				KEEP(*(.init_array))
+    			KEEP(*(.fini_array))
 				_edata = .;
-			} > RAM 
+			} > RAM AT> FLASH
 
 	.bss (NOLOAD) : { 
 			_sbss = .;

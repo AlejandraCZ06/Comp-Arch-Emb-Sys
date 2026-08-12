@@ -32,7 +32,7 @@ LDFLAGS +=-Wl,--no-relax
 
 LDLIBS = -lc -lgcc 
 
-build: $(APPNAME).elf 
+all: $(APPNAME).elf 
 
 $(APPNAME).elf: $(OBJS)
 	@echo $(OBJS) $(SRC)
