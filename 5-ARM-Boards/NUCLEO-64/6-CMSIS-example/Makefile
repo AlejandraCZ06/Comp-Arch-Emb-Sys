@@ -1,4 +1,4 @@
-APPNAME = stand00
+APPNAME = main
 MACHINE = netduinoplus2
 
 
@@ -11,7 +11,17 @@ ARCH =  -mcpu=cortex-m4
 LINKERSCRIPT = linker_script.ld
 BUILD = build
 
-INCLUDE = -I./inc -I. -I../../CMSIS/Device/ST/STM32F4/Include -I../../CMSIS/CMSIS/Core/Include
+#CMSIS directory
+CMSIS = ../STM32utils/Drivers/CMSIS
+#STM32 register definitions
+STM32F4 =$(CMSIS)/Device/ST/STM32F4xx
+
+# Add include directories to search for *.h files
+INCLUDE = -I./inc
+INCLUDE += -I.
+INCLUDE += -I$(STM32F4)/Include
+INCLUDE += -I$(CMSIS)/Core/Include
+
 
 ifeq ($(DBG),1)	
 	QEMU = qemu-system-arm -M $(MACHINE) -kernel $(APPNAME).elf -serial mon:stdio -nographic --no-reboot -S -s
@@ -21,9 +31,11 @@ endif
 
 C_SRC = $(wildcard *.c)
 C_SRC += $(wildcard src/*.c)
-C_SRC += ../../CMSIS/Device/ST/STM32F4/Source/Templates/system_stm32f4xx.c
+# add some smt32f4 helper functions
+C_SRC += $(STM32F4)/Source/Templates/system_stm32f4xx.c
+
 ASM_SRC = $(wildcard *.S)
-# Convert the list of .c files into a list of .o object files w/o the path dir
+# Remove the path dirs and keep only the filenames
 OBJS = $(patsubst %.c, $(BUILD)/%.o, $(notdir $(C_SRC)))
 OBJS += $(patsubst %.S, $(BUILD)/%.o, $(notdir  $(ASM_SRC)))
 
@@ -43,7 +55,7 @@ LDLIBS = -lc -lgcc
 
 all: $(APPNAME).elf 
 
-$(APPNAME).elf: $(OBJS) $(BUILD)
+$(APPNAME).elf: $(OBJS) 
 	@echo $(OBJS) $(SRC)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@ 
 	arm-none-eabi-size -A -x $@

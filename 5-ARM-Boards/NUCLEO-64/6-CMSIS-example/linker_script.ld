@@ -15,6 +15,8 @@ SECTIONS
 	.rodata  : { 
 			*(.rodata*);
 			*(.srodata*); 
+			. = ALIGN(4);
+    		_etext = .;
 			_sidata = .;
 			}	> FLASH
 			
@@ -28,12 +30,15 @@ SECTIONS
 
 	.bss (NOLOAD) : { 
 			_sbss = .;
+			__bss_start__ = _sbss;
 			*(.bss*) 
 			_ebss = .;
+			__bss_end__ = _ebss;
 			}> RAM
 
 	.stack (NOLOAD) :  {
 		. = ORIGIN(RAM) + LENGTH(RAM);
 		stack_top = .;
+		_estack = stack_top;
 	} > RAM
 }
