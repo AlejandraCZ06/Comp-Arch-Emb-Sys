@@ -62,14 +62,15 @@ ToFillZerobss:
     CMP R0, R1
     BLT FillZerobss
 
- LDR R0, =mi_arreglo   
-    MOV R1,#1000
-    MOV R2, #75
+ LDR R0, =mi_arreglo   //Ejercicio 1 a y b
+    MOV R1,#1000          // funciona como un freno, va decreciendo de 1 en 1
+    MOV R2, #75           // inicia en 75 y va aumentando de 1 en 1
 
 loop_init_lab:
     STRB R2, [R0], #1      
     ADD R2, R2, #1        
     SUB R1, R1, #1
+    CMP                   //Agregar comparación para que sepa en que se quedo
     BNE loop_init_lab
     
 _infinite_loop:
@@ -106,7 +107,7 @@ v2: .word	0x11111111,0x22222222,0x33333333,0x44444444	// this is same as: int32_
 	// how to put items into the bss
 	.lcomm b1,4											// this is the same as: int32_t b1;
 	.lcomm b2,16										// this is the same as: int32_t b2[4];
-
+    .lcomm mi_arreglo, 1000                             // parte a de ejericicio 1
 
 
 
