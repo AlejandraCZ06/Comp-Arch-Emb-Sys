@@ -1,3 +1,12 @@
+/*
+Terminal 1:
+   cd stand01
+   make run
+Terminal 2:
+   cd stand 01
+   make debug
+   layout regs
+*/
 .syntax unified
 .cpu cortex-m4
 .thumb
