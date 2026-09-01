@@ -5,7 +5,7 @@ Terminal 1:
 Terminal 2:
    cd stand 01
    make debug
-   layout regs
+   layout
 */
 .syntax unified
 .cpu cortex-m4
