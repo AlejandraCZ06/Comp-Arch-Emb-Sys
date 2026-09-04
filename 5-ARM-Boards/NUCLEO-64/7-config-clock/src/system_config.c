@@ -41,10 +41,12 @@ void clock_config(void){
     FLASH->ACR |= FLASH_ACR_LATENCY_3WS; // Flash Latency must be adjusted considering voltage and CPU clockspeed
 
     RCC->PLLCFGR &= ~(RCC_PLLCFGR_PLLSRC); 
-    RCC->PLLCFGR |= (RCC_PLLCFGR_PLLM_Msk & 16); //M=16 
-    RCC->PLLCFGR |= (RCC_PLLCFGR_PLLN_Msk & 336); //N=336
-    RCC->PLLCFGR |= (RCC_PLLCFGR_PLLP_Msk & 1); //P=4
-    RCC->PLLCFGR |= (RCC_PLLCFGR_PLLQ_Msk & 7); //Q=7
+    RCC->PLLCFGR |= (16 <<  RCC_PLLCFGR_PLLM_Pos); //M=16 
+    RCC->PLLCFGR |= (336 << RCC_PLLCFGR_PLLN_Pos); //N=336
+    RCC->PLLCFGR |= (1 << RCC_PLLCFGR_PLLP_Pos); //P=4
+    RCC->PLLCFGR |= (7 << RCC_PLLCFGR_PLLQ_Pos); //Q=7
+    RCC->CFGR |= (4 << RCC_CFGR_PPRE1_Pos);  //APB1 clocked to 42MHz
+    RCC->CFGR |= (0 << RCC_CFGR_PPRE2_Pos);  //APB2 clocked to 84MHz
 
     RCC->CR |= RCC_CR_PLLON_Msk;  // enable the PLL
     while (! (RCC->CR & RCC_CR_PLLRDY_Msk)); // Wait for the PLL be ready
@@ -53,5 +55,6 @@ void clock_config(void){
     while (! (RCC->CFGR & RCC_CFGR_SWS_PLL)); // Wait for the system to switch the clk;
     #else
     #endif
+   
 
 }
