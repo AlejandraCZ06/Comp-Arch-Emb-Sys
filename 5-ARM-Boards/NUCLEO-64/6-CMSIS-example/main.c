@@ -13,7 +13,7 @@ int main()
 {
 
   GPIO_Config();
-  SysTick_Init();
+  SysTick_Init(1);
 
   while(1)
   {

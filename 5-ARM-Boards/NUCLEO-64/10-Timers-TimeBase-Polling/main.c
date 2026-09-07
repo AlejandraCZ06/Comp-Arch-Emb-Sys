@@ -8,110 +8,64 @@
 #define LED_PIN 5 // Pin 5 corresponds to the on-board LED on the NUCLEO-64 board
 #define BUTTON_PIN 13 // Pin 13 corresponds to the on-board button on the NUCLEO-64 board
 
-/*Declaration of two timers made by software updated every 1ms*/
-typedef struct{
-  unsigned int sw_tmr1_count;
-  unsigned int sw_tmr2_count;
-  unsigned int sw_tmr1_period;
-  unsigned int sw_tmr2_period;
-  unsigned int sw_tmr1_flag;
-  unsigned int sw_tmr2_flag;
-} SW_Timers;
-
-/* Must be delcared volatile as the timer can update asynchounosly*/
-volatile SW_Timers timers;
-
-
-
-void update_sw_timers(SW_Timers* timer){
-  timer->sw_tmr1_count++;
-  timer->sw_tmr2_count++;
-  if(timer->sw_tmr1_count==timer->sw_tmr1_period){
-    timer->sw_tmr1_count=0;
-    timer->sw_tmr1_flag=1;
-  }
-  if(timer->sw_tmr2_count==timer->sw_tmr2_period){
-    timer->sw_tmr2_count=0;
-    timer->sw_tmr2_flag=1;
-  }
-}
-
-
 void Timers_Init(void){
-  RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
-  RCC->APB1ENR |= RCC_APB1ENR_TIM5EN;
+  WRITE_REG_FIELD(RCC->APB1ENR, RCC_APB1ENR_TIM2EN, 1);
+  WRITE_REG_FIELD(RCC->APB1ENR, RCC_APB1ENR_TIM5EN, 1);
   volatile unsigned int dummy;
   dummy =  RCC->APB1ENR;
   dummy =  RCC->APB1ENR;
 
-  TIM2->PSC = 84-1;
-  TIM2->ARR = 500000-1;
-  TIM2->CR1 |= TIM_CR1_DIR;
-  TIM2->CR1 |= TIM_CR1_ARPE;
-  TIM2->CNT = 0;
-  TIM2->CR1 = TIM_CR1_CEN;
+  WRITE_REG_FIELD(TIM2->PSC, TIM_PSC_PSC, 84-1); // Prescaler value to get 1 MHz timer clock (assuming APB1 clock is 84 MHz)
+  WRITE_REG(TIM2->ARR, 500000-1); // Set the auto-reload value to achieve a 0.5-second period (500,000 counts at 1 MHz)
+  WRITE_REG_FIELD(TIM2->CR1, TIM_CR1_DIR, 0); // Set the timer to count up
+  WRITE_REG_FIELD(TIM2->CR1, TIM_CR1_ARPE, 1); // Enable auto-reload preload
+  WRITE_REG(TIM2->CNT, 0); // Initialize the counter to 0
+  WRITE_REG_FIELD(TIM2->CR1, TIM_CR1_CEN, 1); // Enable the timer
 
-  TIM5->PSC = 84-1;
-  TIM5->ARR = 100000-1;
-  TIM5->CR1 |= TIM_CR1_DIR;
-  TIM5->CR1 |= TIM_CR1_ARPE;
-  TIM5->CNT = 0;
-  TIM5->CR1 = TIM_CR1_CEN;
+  WRITE_REG_FIELD(TIM5->PSC, TIM_PSC_PSC, 84-1); // Prescaler value to get 1 MHz timer clock (assuming APB1 clock is 84 MHz)
+  WRITE_REG(TIM5->ARR, 100000-1); // Set the auto-reload value to achieve a 0.1-second period (100,000 counts at 1 MHz)
+  WRITE_REG_FIELD(TIM5->CR1, TIM_CR1_DIR, 0); // Set the timer to count up
+  WRITE_REG_FIELD(TIM5->CR1, TIM_CR1_ARPE, 1); // Enable auto-reload preload
+  WRITE_REG(TIM5->CNT, 0); // Initialize the counter to 0
+  WRITE_REG_FIELD(TIM5->CR1, TIM_CR1_CEN, 1); // Enable the timer
 
+}
+
+void GPIO_board_config(void){
+  GPIO_InitTypeDef GPIO_Init; 
+  GPIO_Init.Pin = LED_PIN;
+  GPIO_Init.Mode = 1;
+  GPIO_Init.Speed = 3;
+  GPIO_Config(GPIOA,GPIO_Init);
+
+  GPIO_Init.Pin = BUTTON_PIN;
+  GPIO_Init.Mode = 0;
+  GPIO_Init.Pull = 1;
+  GPIO_Config(GPIOC,GPIO_Init);
 }
 
 int main()
 {
-
-  clock_config();
-
-  
-  /*Enable the CLK to the GPIOA and GPIOC, this needs to be done before the configuration opf the GPIO*/
-  
-  RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN; // Enable GPIOA clock in RCC_AHB1ENR register (bit 0)
-  RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN; // Enable GPIOC clock in RCC_AHB1ENR register (bit 2)
-  // do two dummy reads after enabling the peripheral clock, as per the errata
-  volatile unsigned int dummy;
-  dummy = (RCC->AHB1ENR);
-  dummy = (RCC->AHB1ENR);
-  
-  GPIO_InitTypeDef GPIO_Init; 
-  GPIO_Init.Pin = (1<<LED_PIN);
-  GPIO_Init.Mode = (1 << GPIO_MODER_MODER5_Pos);
-  GPIO_Init.Speed = (3 << GPIO_OSPEEDR_OSPEED5_Pos);
-  GPIO_Config(GPIOA,GPIO_Init);
-
-  GPIO_Init.Pin = (1<<BUTTON_PIN);
-  GPIO_Init.Mode = (0 << GPIO_MODER_MODER13_Pos);
-  GPIO_Config(GPIOC,GPIO_Init);
-
-  timers.sw_tmr1_period = 500;
-  timers.sw_tmr2_period = 100;
+  clock_config(); 
+  GPIO_board_config();
   Timers_Init();
-  
   while(1)
   {
 
-    /*
-    if(__HAL_TIM_GET_FLAG(&htim2,TIM_FLAG_UPDATE)) {
-        __HAL_TIM_CLEAR_FLAG(&htim2,TIM_FLAG_UPDATE);
-        update_sw_timers(&timers);
-      }*/
-
-    if(read_pin_state(GPIOC,(1<<BUTTON_PIN))){
+    if(read_pin_state(GPIOC,(BUTTON_PIN))){
       //if(timers.sw_tmr1_flag){
       //  timers.sw_tmr1_flag = 0;
       if(TIM2->SR&TIM_SR_UIF) {
-        TIM2->SR &= ~TIM_SR_UIF;
-        toggle_pin_state(GPIOA,1<<LED_PIN);
+        WRITE_REG_FIELD(TIM2->SR, TIM_SR_UIF, 0);
+        toggle_pin_state(GPIOA,LED_PIN);
       }
       
     } else {
       //if(timers.sw_tmr2_flag){
       //  timers.sw_tmr2_flag = 0;
       if(TIM5->SR&TIM_SR_UIF) {
-        TIM5->SR &= ~TIM_SR_UIF;
-        toggle_pin_state(GPIOA,1<<LED_PIN);
+        WRITE_REG_FIELD(TIM5->SR, TIM_SR_UIF, 0);
+        toggle_pin_state(GPIOA,LED_PIN);
       }
     }
 

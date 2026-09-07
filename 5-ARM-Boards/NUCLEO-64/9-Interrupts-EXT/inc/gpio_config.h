@@ -3,6 +3,7 @@
 #define STM32F401xE
 #include "stm32f4xx.h"
 #include "stdint.h"
+#include "system_config.h"
 
 typedef struct {
     uint32_t Mode;
@@ -13,6 +14,7 @@ typedef struct {
 
 } GPIO_InitTypeDef;
 
+void GPIO_clock_enable(volatile GPIO_TypeDef *GPIOx);
 
 void GPIO_Config(volatile GPIO_TypeDef *GPIOx, GPIO_InitTypeDef Config);
 
