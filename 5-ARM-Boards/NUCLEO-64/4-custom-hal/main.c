@@ -18,20 +18,12 @@ typedef struct {
 
 #define GPIOA_BASE   (AHB1_BASE + 0x0000U)
 #define GPIOB_BASE   (AHB1_BASE + 0x0400U)
-#define GPIOC_BASE   (AHB1_BASE + 0x0800U)
 #define RCC_BASE     (AHB1_BASE + 0x3800U)
 
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)
-#define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)
 
 #define RCC_AHB1ENR ((volatile uint32_t *)(RCC_BASE + 0x30U))
-
-
-// Variables pedidas por el ejercicio
-volatile uint8_t hundreds;
-volatile uint8_t tens;
-volatile uint8_t units;
 
 
 void configurar_salida(GPIO_TypeDef *puerto, uint8_t pin)
@@ -41,37 +33,12 @@ void configurar_salida(GPIO_TypeDef *puerto, uint8_t pin)
 }
 
 
-void configurar_entrada_pullup(GPIO_TypeDef *puerto, uint8_t pin)
-{
-    // Entrada
-    puerto->MODER &= ~(3U << (pin * 2));
-
-    // Pull-up interno
-    puerto->PUPDR &= ~(3U << (pin * 2));
-    puerto->PUPDR |= (1U << (pin * 2));
-}
-
-
 void escribir(GPIO_TypeDef *puerto, uint8_t pin, uint8_t valor)
 {
     if (valor)
         puerto->ODR |= (1U << pin);
     else
         puerto->ODR &= ~(1U << pin);
-}
-
-
-uint8_t leer_dip(void)
-{
-    uint8_t valor;
-
-    valor = GPIOC->IDR & 0xFF;
-
-    // Los switches conectan a GND cuando se activan
-    // Por eso invertimos el resultado
-    valor = ~valor;
-
-    return valor;
 }
 
 
@@ -89,8 +56,8 @@ void apagar_digitos(void)
 void mostrar_numero(uint8_t numero)
 {
     // Ánodo común
-    // 0 = segmento encendido
-    // 1 = segmento apagado
+    // 0 = encendido
+    // 1 = apagado
 
     // A
     if (numero == 0 || numero == 2 || numero == 3 ||
@@ -150,121 +117,112 @@ void mostrar_numero(uint8_t numero)
 }
 
 
-void retardo(volatile uint32_t ciclos)
+void retardo_corto(volatile uint32_t ciclos)
 {
     while (ciclos--);
 }
 
 
+void mostrar_3_digitos(uint16_t numero)
+{
+    uint8_t centenas;
+    uint8_t decenas;
+    uint8_t unidades;
+
+    centenas = numero / 100;
+    decenas = (numero / 10) % 10;
+    unidades = numero % 10;
+
+
+    // DISPLAY IZQUIERDO = CENTENAS
+    apagar_digitos();
+    mostrar_numero(centenas);
+    escribir(GPIOB, 10, 0);
+    retardo_corto(1000);
+
+
+    // DISPLAY CENTRAL = DECENAS
+    apagar_digitos();
+    mostrar_numero(decenas);
+    escribir(GPIOB, 9, 0);
+    retardo_corto(1000);
+
+
+    // DISPLAY DERECHO = UNIDADES
+    apagar_digitos();
+    mostrar_numero(unidades);
+    escribir(GPIOA, 6, 0);
+    retardo_corto(1000);
+}
+
+
+void mostrar_durante_250ms(uint16_t numero)
+{
+    uint16_t i;
+
+    // Repetimos el multiplexado muchas veces
+    // para que el número parezca fijo.
+
+    for (i = 0; i < 250; i++)
+    {
+        mostrar_3_digitos(numero);
+    }
+}
+
+
 int main(void)
 {
-    uint8_t entrada;
+    uint16_t anterior;
+    uint16_t actual;
+    uint16_t siguiente;
 
 
-    // =====================================
-    // ACTIVAR GPIOA, GPIOB Y GPIOC
-    // =====================================
-
+    // Activar GPIOA y GPIOB
     *RCC_AHB1ENR |= (1U << 0);
     *RCC_AHB1ENR |= (1U << 1);
-    *RCC_AHB1ENR |= (1U << 2);
 
 
-    // =====================================
-    // DIP SWITCH PC0 - PC7
-    // =====================================
+    // Segmentos
+    configurar_salida(GPIOA, 8);   // A
+    configurar_salida(GPIOA, 9);   // B
+    configurar_salida(GPIOA, 10);  // C
 
-    configurar_entrada_pullup(GPIOC, 0);
-    configurar_entrada_pullup(GPIOC, 1);
-    configurar_entrada_pullup(GPIOC, 2);
-    configurar_entrada_pullup(GPIOC, 3);
-    configurar_entrada_pullup(GPIOC, 4);
-    configurar_entrada_pullup(GPIOC, 5);
-    configurar_entrada_pullup(GPIOC, 6);
-    configurar_entrada_pullup(GPIOC, 7);
+    configurar_salida(GPIOB, 3);   // D
+    configurar_salida(GPIOB, 4);   // E
+    configurar_salida(GPIOB, 5);   // F
+    configurar_salida(GPIOB, 6);   // G
+    configurar_salida(GPIOB, 8);   // DP
 
 
-    // =====================================
-    // SEGMENTOS DEL DISPLAY
-    // =====================================
-
-    configurar_salida(GPIOA, 8);    // A
-    configurar_salida(GPIOA, 9);    // B
-    configurar_salida(GPIOA, 10);   // C
-
-    configurar_salida(GPIOB, 3);    // D
-    configurar_salida(GPIOB, 4);    // E
-    configurar_salida(GPIOB, 5);    // F
-    configurar_salida(GPIOB, 6);    // G
-    configurar_salida(GPIOB, 8);    // DP
+    // Dígitos
+    configurar_salida(GPIOB, 9);   // Display central
+    configurar_salida(GPIOB, 10);  // Display izquierdo
+    configurar_salida(GPIOA, 6);   // Display derecho
 
 
-    // =====================================
-    // DIGITOS
-    // =====================================
-
-    configurar_salida(GPIOB, 9);
-    configurar_salida(GPIOB, 10);
-    configurar_salida(GPIOA, 6);
+    // Primeros dos números
+    anterior = 0;
+    actual = 1;
 
 
     while (1)
     {
-        // =================================
-        // 1. LEER DIP SWITCH
-        // =================================
-
-        entrada = leer_dip();
+        // Mostrar número actual durante aproximadamente 250 ms
+        mostrar_durante_250ms(actual);
 
 
-        // =================================
-        // 2. CONVERTIR A CENTENAS,
-        //    DECENAS Y UNIDADES
-        // =================================
+        // Calcular siguiente número
+        siguiente = anterior + actual;
 
-        hundreds = entrada / 100;
-
-        tens = (entrada / 10) % 10;
-
-        units = entrada % 10;
+        anterior = actual;
+        actual = siguiente;
 
 
-        // =================================
-        // 3. MOSTRAR CENTENAS
-        // =================================
-
-        apagar_digitos();
-
-        mostrar_numero(hundreds);
-
-        escribir(GPIOB, 9, 0);
-
-        retardo(1000);
-
-
-        // =================================
-        // 4. MOSTRAR DECENAS
-        // =================================
-
-        apagar_digitos();
-
-        mostrar_numero(tens);
-
-        escribir(GPIOB, 10, 0);
-
-        retardo(1000);
-
-
-        // =================================
-        // 5. MOSTRAR UNIDADES
-        // =================================
-
-        apagar_digitos();
-
-        mostrar_numero(units);
-
-        escribir(GPIOA, 6, 0);
-
-        retardo(1000);
+        // Cuando supera 987, reiniciar
+        if (actual > 987)
+        {
+            anterior = 0;
+            actual = 1;
+        }
     }
 }
