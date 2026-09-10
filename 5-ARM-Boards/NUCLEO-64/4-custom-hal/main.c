@@ -52,33 +52,66 @@ void apagar_digitos(void)
 }
 
 
-void mostrar_8(void)
+void mostrar_numero(uint8_t numero)
 {
     // Ánodo común
-    // 0 = segmento encendido
+    // 0 = encendido
+    // 1 = apagado
 
     // A
-    escribir(GPIOA, 8, 0);
+    if (numero == 0 || numero == 2 || numero == 3 ||
+        numero == 5 || numero == 6 || numero == 7 ||
+        numero == 8 || numero == 9)
+        escribir(GPIOA, 8, 0);
+    else
+        escribir(GPIOA, 8, 1);
 
     // B
-    escribir(GPIOA, 9, 0);
+    if (numero == 0 || numero == 1 || numero == 2 ||
+        numero == 3 || numero == 4 || numero == 7 ||
+        numero == 8 || numero == 9)
+        escribir(GPIOA, 9, 0);
+    else
+        escribir(GPIOA, 9, 1);
 
     // C
-    escribir(GPIOA, 10, 0);
+    if (numero == 0 || numero == 1 || numero == 3 ||
+        numero == 4 || numero == 5 || numero == 6 ||
+        numero == 7 || numero == 8 || numero == 9)
+        escribir(GPIOA, 10, 0);
+    else
+        escribir(GPIOA, 10, 1);
 
     // D
-    escribir(GPIOB, 3, 0);
+    if (numero == 0 || numero == 2 || numero == 3 ||
+        numero == 5 || numero == 6 || numero == 8 ||
+        numero == 9)
+        escribir(GPIOB, 3, 0);
+    else
+        escribir(GPIOB, 3, 1);
 
     // E
-    escribir(GPIOB, 4, 0);
+    if (numero == 0 || numero == 2 || numero == 6 || numero == 8)
+        escribir(GPIOB, 4, 0);
+    else
+        escribir(GPIOB, 4, 1);
 
     // F
-    escribir(GPIOB, 5, 0);
+    if (numero == 0 || numero == 4 || numero == 5 ||
+        numero == 6 || numero == 8 || numero == 9)
+        escribir(GPIOB, 5, 0);
+    else
+        escribir(GPIOB, 5, 1);
 
     // G
-    escribir(GPIOB, 6, 0);
+    if (numero == 2 || numero == 3 || numero == 4 ||
+        numero == 5 || numero == 6 || numero == 8 ||
+        numero == 9)
+        escribir(GPIOB, 6, 0);
+    else
+        escribir(GPIOB, 6, 1);
 
-    // DP apagado
+    // Punto apagado
     escribir(GPIOB, 8, 1);
 }
 
@@ -96,10 +129,7 @@ int main(void)
     *RCC_AHB1ENR |= (1U << 1);
 
 
-    // =========================
-    // SEGMENTOS
-    // =========================
-
+    // Segmentos
     configurar_salida(GPIOA, 8);   // A
     configurar_salida(GPIOA, 9);   // B
     configurar_salida(GPIOA, 10);  // C
@@ -111,10 +141,7 @@ int main(void)
     configurar_salida(GPIOB, 8);   // DP
 
 
-    // =========================
-    // DIGITOS
-    // =========================
-
+    // Dígitos
     configurar_salida(GPIOB, 9);   // Display 1
     configurar_salida(GPIOB, 10);  // Display 2
     configurar_salida(GPIOA, 6);   // Display 3
@@ -122,23 +149,29 @@ int main(void)
 
     while (1)
     {
-        // DISPLAY 1
+        // =========================
+        // DISPLAY 1 = 5
+        // =========================
         apagar_digitos();
-        mostrar_8();
+        mostrar_numero(5);
         escribir(GPIOB, 9, 0);
         retardo(1000);
 
 
-        // DISPLAY 2
+        // =========================
+        // DISPLAY 2 = 3
+        // =========================
         apagar_digitos();
-        mostrar_8();
+        mostrar_numero(3);
         escribir(GPIOB, 10, 0);
         retardo(1000);
 
 
-        // DISPLAY 3
+        // =========================
+        // DISPLAY 3 = 2
+        // =========================
         apagar_digitos();
-        mostrar_8();
+        mostrar_numero(2);
         escribir(GPIOA, 6, 0);
         retardo(1000);
     }
