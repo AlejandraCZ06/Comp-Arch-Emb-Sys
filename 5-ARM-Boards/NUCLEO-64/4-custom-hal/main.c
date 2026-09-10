@@ -1,5 +1,6 @@
 #include <stdint.h>
 
+
 typedef struct {
     volatile uint32_t MODER;
     volatile uint32_t OTYPER;
@@ -47,9 +48,9 @@ void apagar_digitos(void)
     // Ánodo común
     // 1 = apagado
 
-    escribir(GPIOB, 9, 1);
-    escribir(GPIOB, 10, 1);
-    escribir(GPIOA, 6, 1);
+    escribir(GPIOB, 9, 1);   // Display izquierdo
+    escribir(GPIOB, 10, 1);  // Display central
+    escribir(GPIOA, 6, 1);   // Display derecho
 }
 
 
@@ -59,6 +60,7 @@ void mostrar_numero(uint8_t numero)
     // 0 = encendido
     // 1 = apagado
 
+
     // A
     if (numero == 0 || numero == 2 || numero == 3 ||
         numero == 5 || numero == 6 || numero == 7 ||
@@ -66,6 +68,7 @@ void mostrar_numero(uint8_t numero)
         escribir(GPIOA, 8, 0);
     else
         escribir(GPIOA, 8, 1);
+
 
     // B
     if (numero == 0 || numero == 1 || numero == 2 ||
@@ -75,6 +78,7 @@ void mostrar_numero(uint8_t numero)
     else
         escribir(GPIOA, 9, 1);
 
+
     // C
     if (numero == 0 || numero == 1 || numero == 3 ||
         numero == 4 || numero == 5 || numero == 6 ||
@@ -82,6 +86,7 @@ void mostrar_numero(uint8_t numero)
         escribir(GPIOA, 10, 0);
     else
         escribir(GPIOA, 10, 1);
+
 
     // D
     if (numero == 0 || numero == 2 || numero == 3 ||
@@ -91,11 +96,14 @@ void mostrar_numero(uint8_t numero)
     else
         escribir(GPIOB, 3, 1);
 
+
     // E
-    if (numero == 0 || numero == 2 || numero == 6 || numero == 8)
+    if (numero == 0 || numero == 2 ||
+        numero == 6 || numero == 8)
         escribir(GPIOB, 4, 0);
     else
         escribir(GPIOB, 4, 1);
+
 
     // F
     if (numero == 0 || numero == 4 || numero == 5 ||
@@ -104,6 +112,7 @@ void mostrar_numero(uint8_t numero)
     else
         escribir(GPIOB, 5, 1);
 
+
     // G
     if (numero == 2 || numero == 3 || numero == 4 ||
         numero == 5 || numero == 6 || numero == 8 ||
@@ -111,6 +120,7 @@ void mostrar_numero(uint8_t numero)
         escribir(GPIOB, 6, 0);
     else
         escribir(GPIOB, 6, 1);
+
 
     // DP apagado
     escribir(GPIOB, 8, 1);
@@ -129,26 +139,30 @@ void mostrar_3_digitos(uint16_t numero)
     uint8_t decenas;
     uint8_t unidades;
 
+
     centenas = numero / 100;
     decenas = (numero / 10) % 10;
     unidades = numero % 10;
 
 
     // DISPLAY IZQUIERDO = CENTENAS
+    // PB9
     apagar_digitos();
     mostrar_numero(centenas);
-    escribir(GPIOB, 10, 0);
-    retardo_corto(1000);
-
-
-    // DISPLAY CENTRAL = DECENAS
-    apagar_digitos();
-    mostrar_numero(decenas);
     escribir(GPIOB, 9, 0);
     retardo_corto(1000);
 
 
+    // DISPLAY CENTRAL = DECENAS
+    // PB10
+    apagar_digitos();
+    mostrar_numero(decenas);
+    escribir(GPIOB, 10, 0);
+    retardo_corto(1000);
+
+
     // DISPLAY DERECHO = UNIDADES
+    // PA6
     apagar_digitos();
     mostrar_numero(unidades);
     escribir(GPIOA, 6, 0);
@@ -156,14 +170,16 @@ void mostrar_3_digitos(uint16_t numero)
 }
 
 
-void mostrar_durante_250ms(uint16_t numero)
+void mostrar_durante_1500ms(uint16_t numero)
 {
     uint16_t i;
 
-    // Repetimos el multiplexado muchas veces
-    // para que el número parezca fijo.
 
-    for (i = 0; i < 250; i++)
+    // Repetimos el multiplexado
+    // para que el número permanezca visible
+    // aproximadamente 1.5 segundos.
+
+    for (i = 0; i < 1500; i++)
     {
         mostrar_3_digitos(numero);
     }
@@ -182,7 +198,8 @@ int main(void)
     *RCC_AHB1ENR |= (1U << 1);
 
 
-    // Segmentos
+    // SEGMENTOS
+
     configurar_salida(GPIOA, 8);   // A
     configurar_salida(GPIOA, 9);   // B
     configurar_salida(GPIOA, 10);  // C
@@ -194,26 +211,29 @@ int main(void)
     configurar_salida(GPIOB, 8);   // DP
 
 
-    // Dígitos
-    configurar_salida(GPIOB, 9);   // Display central
-    configurar_salida(GPIOB, 10);  // Display izquierdo
+    // DÍGITOS
+
+    configurar_salida(GPIOB, 9);   // Display izquierdo
+    configurar_salida(GPIOB, 10);  // Display central
     configurar_salida(GPIOA, 6);   // Display derecho
 
 
-    // Primeros dos números
+    // Primeros dos números de Fibonacci
     anterior = 0;
     actual = 1;
 
 
     while (1)
     {
-        // Mostrar número actual durante aproximadamente 250 ms
-        mostrar_durante_250ms(actual);
+        // Mostrar número actual durante aproximadamente 1.5 segundos
+        mostrar_durante_1500ms(actual);
 
 
         // Calcular siguiente número
         siguiente = anterior + actual;
 
+
+        // Actualizar valores
         anterior = actual;
         actual = siguiente;
 
