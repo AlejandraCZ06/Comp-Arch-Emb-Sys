@@ -48,9 +48,9 @@ void apagar_digitos(void)
     // Ánodo común
     // 1 = apagado
 
-    escribir(GPIOB, 9, 1);   // Display izquierdo
-    escribir(GPIOB, 10, 1);  // Display central
-    escribir(GPIOA, 6, 1);   // Display derecho
+    escribir(GPIOB, 9, 1);   // Display izquierdo - D2
+    escribir(GPIOB, 10, 1);  // Display central   - D3
+    escribir(GPIOA, 6, 1);   // Display derecho   - D4
 }
 
 
@@ -146,7 +146,7 @@ void mostrar_3_digitos(uint16_t numero)
 
 
     // DISPLAY IZQUIERDO = CENTENAS
-    // PB9
+    // D2 = PB9 = CN10 pin 5
     apagar_digitos();
     mostrar_numero(centenas);
     escribir(GPIOB, 9, 0);
@@ -154,7 +154,7 @@ void mostrar_3_digitos(uint16_t numero)
 
 
     // DISPLAY CENTRAL = DECENAS
-    // PB10
+    // D3 = PB10 = CN10 pin 25
     apagar_digitos();
     mostrar_numero(decenas);
     escribir(GPIOB, 10, 0);
@@ -162,7 +162,7 @@ void mostrar_3_digitos(uint16_t numero)
 
 
     // DISPLAY DERECHO = UNIDADES
-    // PA6
+    // D4 = PA6 = CN10 pin 13
     apagar_digitos();
     mostrar_numero(unidades);
     escribir(GPIOA, 6, 0);
@@ -170,16 +170,16 @@ void mostrar_3_digitos(uint16_t numero)
 }
 
 
-void mostrar_durante_1500ms(uint16_t numero)
+void mostrar_durante_250ms(uint16_t numero)
 {
     uint16_t i;
 
 
     // Repetimos el multiplexado
     // para que el número permanezca visible
-    // aproximadamente 1.5 segundos.
+    // aproximadamente 250 ms.
 
-    for (i = 0; i < 1500; i++)
+    for (i = 0; i < 250; i++)
     {
         mostrar_3_digitos(numero);
     }
@@ -213,9 +213,9 @@ int main(void)
 
     // DÍGITOS
 
-    configurar_salida(GPIOB, 9);   // Display izquierdo
-    configurar_salida(GPIOB, 10);  // Display central
-    configurar_salida(GPIOA, 6);   // Display derecho
+    configurar_salida(GPIOB, 9);   // D2 - Display izquierdo
+    configurar_salida(GPIOB, 10);  // D3 - Display central
+    configurar_salida(GPIOA, 6);   // D4 - Display derecho
 
 
     // Primeros dos números de Fibonacci
@@ -225,8 +225,8 @@ int main(void)
 
     while (1)
     {
-        // Mostrar número actual durante aproximadamente 1.5 segundos
-        mostrar_durante_1500ms(actual);
+        // Mostrar número actual durante aproximadamente 250 ms
+        mostrar_durante_250ms(actual);
 
 
         // Calcular siguiente número
