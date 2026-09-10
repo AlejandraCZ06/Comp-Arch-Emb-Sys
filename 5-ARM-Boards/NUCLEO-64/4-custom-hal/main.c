@@ -43,8 +43,8 @@ void escribir(GPIO_TypeDef *puerto, uint8_t pin, uint8_t valor)
 
 void apagar_digitos(void)
 {
-    // Cátodo común
-    // 1 = display apagado
+    // Ánodo común
+    // 1 = apagado
 
     escribir(GPIOB, 9, 1);
     escribir(GPIOB, 10, 1);
@@ -54,31 +54,32 @@ void apagar_digitos(void)
 
 void mostrar_8(void)
 {
-    // Para mostrar 8 se encienden A B C D E F G
+    // Ánodo común
+    // 0 = segmento encendido
 
     // A
-    escribir(GPIOA, 8, 1);
+    escribir(GPIOA, 8, 0);
 
     // B
-    escribir(GPIOA, 9, 1);
+    escribir(GPIOA, 9, 0);
 
     // C
-    escribir(GPIOA, 10, 1);
+    escribir(GPIOA, 10, 0);
 
     // D
-    escribir(GPIOB, 3, 1);
+    escribir(GPIOB, 3, 0);
 
     // E
-    escribir(GPIOB, 4, 1);
+    escribir(GPIOB, 4, 0);
 
     // F
-    escribir(GPIOB, 5, 1);
+    escribir(GPIOB, 5, 0);
 
     // G
-    escribir(GPIOB, 6, 1);
+    escribir(GPIOB, 6, 0);
 
-    // Punto decimal apagado
-    escribir(GPIOB, 8, 0);
+    // DP apagado
+    escribir(GPIOB, 8, 1);
 }
 
 
