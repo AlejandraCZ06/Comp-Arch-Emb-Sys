@@ -7,7 +7,7 @@ int main(void)
     while (1)
     {
         /*
-         * BOTON 3 -> PB12
+         * BOTON 3 -> PC10
          * LED 3   -> PB10
          */
 

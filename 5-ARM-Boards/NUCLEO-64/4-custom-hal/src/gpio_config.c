@@ -31,7 +31,7 @@ void GPIO_Config(void)
      *
      * Boton 1 -> PC0 -> CN8-6
      * Boton 2 -> PC1 -> CN8-5
-     * Boton 3 -> PB12 -> CN10-16
+     * Boton 3 -> PC10 -> CN7-1
      * Boton 4 -> PB13 -> CN10-30
      * Boton 5 -> PB14 -> CN10-28
      * Boton 6 -> PC5 -> CN10-6
@@ -53,10 +53,10 @@ void GPIO_Config(void)
     GPIOC->PUPDR |=  (1 << (1 * 2));
 
 
-    /* Boton 3 -> PB12 */
-    GPIOB->MODER &= ~(3 << (12 * 2));
-    GPIOB->PUPDR &= ~(3 << (12 * 2));
-    GPIOB->PUPDR |=  (1 << (12 * 2));
+    /* Boton 3 -> PC10 */
+    GPIOC->MODER &= ~(3 << (10 * 2));
+    GPIOC->PUPDR &= ~(3 << (10 * 2));
+    GPIOC->PUPDR |=  (1 << (10 * 2));
 
 
     /* Boton 4 -> PB13 */
@@ -217,11 +217,6 @@ void write_pin_state(volatile GPIO_TypeDef *GPIOx, uint8_t pin, uint8_t state)
  * ==================================================
  * BOTON PRESIONADO
  * ==================================================
- *
- * Pull-up:
- *
- * 1 = sin presionar
- * 0 = presionado
  */
 
 uint8_t boton_presionado(uint8_t boton)
@@ -235,7 +230,7 @@ uint8_t boton_presionado(uint8_t boton)
             return read_pin_state(GPIOC, 1) == 0;
 
         case 3:
-            return read_pin_state(GPIOB, 12) == 0;
+            return read_pin_state(GPIOC, 10) == 0;
 
         case 4:
             return read_pin_state(GPIOB, 13) == 0;
