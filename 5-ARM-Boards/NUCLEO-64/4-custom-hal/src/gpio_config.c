@@ -30,7 +30,7 @@ void GPIO_Config(void)
      * Boton 6 -> PC5
      * Boton 7 -> PC6
      * Boton 8 -> PC7
-     * Boton 9 -> PB10  (Pulsador 9)
+     * Boton 9 -> PB10  (Pulsador 9 en PB10)
      */
 
     /* Boton 1 -> PC0 */
@@ -86,13 +86,13 @@ void GPIO_Config(void)
      *
      * Rojo 1 -> PA0
      * Rojo 2 -> PA1
-     * Rojo 3 -> PB15  (Cambiado: LED 3 en PB15)
+     * Rojo 3 -> PB9   (LED 3 en PB9)
      * Rojo 4 -> PA8
      * Rojo 5 -> PA4
      * Rojo 6 -> PA6
      * Rojo 7 -> PA5
      * Rojo 8 -> PA7
-     * Rojo 9 -> PC8   (LED 9 en PC8)
+     * Rojo 9 -> PB15  (LED 9 cambiado a PB15)
      */
 
     /* LED rojo 1 -> PA0 */
@@ -103,9 +103,9 @@ void GPIO_Config(void)
     GPIOA->MODER &= ~(3 << (1 * 2));
     GPIOA->MODER |=  (1 << (1 * 2));
 
-    /* LED rojo 3 -> PB15 (CAMBIADO) */
-    GPIOB->MODER &= ~(3 << (15 * 2));
-    GPIOB->MODER |=  (1 << (15 * 2));
+    /* LED rojo 3 -> PB9 */
+    GPIOB->MODER &= ~(3 << (9 * 2));
+    GPIOB->MODER |=  (1 << (9 * 2));
 
     /* LED rojo 4 -> PA8 */
     GPIOA->MODER &= ~(3 << (8 * 2));
@@ -127,9 +127,9 @@ void GPIO_Config(void)
     GPIOA->MODER &= ~(3 << (7 * 2));
     GPIOA->MODER |=  (1 << (7 * 2));
 
-    /* LED rojo 9 -> PC8 */
-    GPIOC->MODER &= ~(3 << (8 * 2));
-    GPIOC->MODER |=  (1 << (8 * 2));
+    /* LED rojo 9 -> PB15 (CAMBIADO) */
+    GPIOB->MODER &= ~(3 << (15 * 2));
+    GPIOB->MODER |=  (1 << (15 * 2));
 
 
     /*
@@ -140,13 +140,13 @@ void GPIO_Config(void)
 
     write_pin_state(GPIOA, 0, 0);
     write_pin_state(GPIOA, 1, 0);
-    write_pin_state(GPIOB, 15, 0);  // Apagar LED 3 en PB15
+    write_pin_state(GPIOB, 9, 0);   // Apagar LED 3 en PB9
     write_pin_state(GPIOA, 8, 0);
     write_pin_state(GPIOA, 4, 0);
     write_pin_state(GPIOA, 6, 0);
     write_pin_state(GPIOA, 5, 0);
     write_pin_state(GPIOA, 7, 0);
-    write_pin_state(GPIOC, 8, 0);   // Apagar LED 9 en PC8
+    write_pin_state(GPIOB, 15, 0);  // Apagar LED 9 en PB15
 }
 
 
@@ -212,7 +212,7 @@ void led_rojo(uint8_t led, uint8_t estado)
             write_pin_state(GPIOA, 1, estado);
             break;
         case 3:
-            write_pin_state(GPIOB, 15, estado); // LED 3 en PB15 (CAMBIADO)
+            write_pin_state(GPIOB, 9, estado);  // LED 3 en PB9
             break;
         case 4:
             write_pin_state(GPIOA, 8, estado);
@@ -230,7 +230,7 @@ void led_rojo(uint8_t led, uint8_t estado)
             write_pin_state(GPIOA, 7, estado);
             break;
         case 9:
-            write_pin_state(GPIOC, 8, estado);  // LED 9 en PC8
+            write_pin_state(GPIOB, 15, estado); // LED 9 en PB15 (CAMBIADO)
             break;
         default:
             break;
