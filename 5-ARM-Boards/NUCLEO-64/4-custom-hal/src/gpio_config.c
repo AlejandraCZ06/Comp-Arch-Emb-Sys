@@ -32,7 +32,7 @@ void GPIO_Config(void)
     dummy = RCC->AHB1ENR;
     dummy = RCC->AHB1ENR;
 
-    /* BOTONES EXTERNOS */
+    /* BOTONES */
     configurar_entrada_pullup(GPIOC, 0);
     configurar_entrada_pullup(GPIOC, 1);
     configurar_entrada_pullup(GPIOB, 8);
@@ -43,7 +43,7 @@ void GPIO_Config(void)
     configurar_entrada_pullup(GPIOC, 7);
     configurar_entrada_pullup(GPIOA, 10);
 
-    /* B1 DE LA NUCLEO */
+    /* B1 */
     configurar_entrada(GPIOC, 13);
 
     /* LEDS ROJOS */
@@ -68,7 +68,7 @@ void GPIO_Config(void)
     configurar_salida(GPIOC, 8);
     configurar_salida(GPIOA, 9);
 
-    /* APAGAR LEDS ROJOS */
+    /* APAGAR ROJOS */
     write_pin_state(GPIOA, 0, 0);
     write_pin_state(GPIOA, 1, 0);
     write_pin_state(GPIOB, 9, 0);
@@ -79,7 +79,7 @@ void GPIO_Config(void)
     write_pin_state(GPIOA, 7, 0);
     write_pin_state(GPIOB, 15, 0);
 
-    /* APAGAR LEDS AZULES */
+    /* APAGAR AZULES */
     write_pin_state(GPIOB, 7, 0);
     write_pin_state(GPIOB, 1, 0);
     write_pin_state(GPIOB, 2, 0);

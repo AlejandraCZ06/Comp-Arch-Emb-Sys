@@ -11,13 +11,21 @@ uint8_t ganador_final = 0;
 void iniciar_aleatorio(void)
 {
     DEMCR |= (1 << 24);
-    DWT_CYCCNT = 0;
     DWT_CTRL |= 1;
+}
+
+uint8_t numero_aleatorio(uint8_t max)
+{
+    if (max == 0)
+        return 0;
+
+    return DWT_CYCCNT % max;
 }
 
 uint8_t ganador(uint8_t jugador)
 {
-    uint8_t c[8][3] = {
+    uint8_t c[8][3] =
+    {
         {0,1,2},
         {3,4,5},
         {6,7,8},
@@ -65,7 +73,6 @@ void limpiar_tablero(void)
     for (i = 0; i < 9; i++)
     {
         tablero[i] = 0;
-
         led_rojo(i + 1, 0);
         led_azul(i + 1, 0);
     }
@@ -94,15 +101,23 @@ void soltar_B1(void)
 
 uint8_t casilla_libre(void)
 {
+    uint8_t libres[9];
+    uint8_t cantidad = 0;
     uint8_t i;
 
     for (i = 0; i < 9; i++)
     {
         if (tablero[i] == 0)
-            return i;
+        {
+            libres[cantidad] = i;
+            cantidad++;
+        }
     }
 
-    return 9;
+    if (cantidad == 0)
+        return 9;
+
+    return libres[numero_aleatorio(cantidad)];
 }
 
 void jugada_computadora(void)
@@ -124,48 +139,44 @@ void jugar(void)
 
     while (1)
     {
-        /* JUGADA HUMANA */
         for (i = 0; i < 9; i++)
         {
             if (boton_presionado(i + 1))
             {
-                /* Casilla ocupada: ignorar */
                 if (tablero[i] != 0)
                 {
                     esperar_soltura(i + 1);
                     continue;
                 }
 
-                /* Registrar jugada */
+                /* Jugada humana */
                 tablero[i] = 1;
-
-                /* Encender LED azul */
                 led_azul(i + 1, 1);
 
                 esperar_soltura(i + 1);
 
-                /* Si gana el humano, terminar */
+                /* Gana humano */
                 if (ganador(1))
                 {
                     ganador_final = 1;
                     return;
                 }
 
-                /* Si se llenaron las 9, empate */
+                /* Empate */
                 if (tablero_lleno())
                     return;
 
-                /* JUGADA COMPUTADORA */
+                /* Jugada computadora */
                 jugada_computadora();
 
-                /* Si gana la computadora, terminar */
+                /* Gana computadora */
                 if (ganador(2))
                 {
                     ganador_final = 2;
                     return;
                 }
 
-                /* Si se llenaron las 9, empate */
+                /* Empate */
                 if (tablero_lleno())
                     return;
             }
@@ -192,7 +203,7 @@ void titilar_ganador(void)
         }
     }
 
-    /* Titilar ganador 3 veces */
+    /* Titilar 3 veces */
     for (j = 0; j < 3; j++)
     {
         /* Apagar ganador */
@@ -238,17 +249,21 @@ int main(void)
 
     while (1)
     {
-        /* B1 = INICIO + ALEATORIO */
+        /* B1 inicia la partida */
         esperar_B1();
+
+        /*
+         * Tomar el contador mientras B1
+         * esta presionado para obtener
+         * una semilla diferente.
+         */
+        turno = numero_aleatorio(2);
+
         soltar_B1();
 
-        /* Nueva partida */
         limpiar_tablero();
 
-        /* Elegir aleatoriamente quien empieza */
-        turno = DWT_CYCCNT & 1;
-
-        /* Si empieza computadora */
+        /* Computadora empieza */
         if (turno == 1)
         {
             jugada_computadora();
@@ -257,17 +272,14 @@ int main(void)
                 ganador_final = 2;
         }
 
-        /* Jugar partida */
+        /* Jugar */
         if (ganador_final == 0)
-        {
             jugar();
-        }
 
-        /* Si hay ganador, titilar 3 veces */
+        /* Mostrar resultado */
         titilar_ganador();
 
-        /* Si fue empate, simplemente queda
-           el tablero completo y espera B1 */
+        /* B1 vuelve a iniciar otra partida */
     }
 
     return 0;
