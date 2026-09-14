@@ -1,116 +1,96 @@
 #include "gpio_config.h"
 
-
-/*
- * Configuración de GPIO
- *
- * PA0 - PA8  -> LEDs rojos
- * PB0 - PB8  -> LEDs verdes
- * PC0 - PC8  -> Botones
- *
- * En esta primera prueba solamente
- * utilizamos PA0-PA8 y PC0-PC8.
- */
-
-
 void GPIO_Config(void)
 {
-    uint8_t i;
-
-
-    /* =====================================
-       ACTIVAR RELOJ DE GPIOA, GPIOB Y GPIOC
-       ===================================== */
-
+    /* Activar reloj de GPIOA, GPIOB y GPIOC */
     RCC->AHB1ENR |= (1 << 0);   // GPIOA
     RCC->AHB1ENR |= (1 << 1);   // GPIOB
     RCC->AHB1ENR |= (1 << 2);   // GPIOC
 
+    volatile unsigned int dummy;
+    dummy = RCC->AHB1ENR;
+    dummy = RCC->AHB1ENR;
 
-    /* =====================================
-       PA0 - PA8
-       LEDs ROJOS
-       Configurar como salida
-       ===================================== */
+    /*
+     * BOTONES
+     *
+     * PC0-PC8 como entradas
+     */
+    GPIOC->MODER_Bits.MODER0 = 0;
+    GPIOC->MODER_Bits.MODER1 = 0;
+    GPIOC->MODER_Bits.MODER2 = 0;
+    GPIOC->MODER_Bits.MODER3 = 0;
+    GPIOC->MODER_Bits.MODER4 = 0;
+    GPIOC->MODER_Bits.MODER5 = 0;
+    GPIOC->MODER_Bits.MODER6 = 0;
+    GPIOC->MODER_Bits.MODER7 = 0;
+    GPIOC->MODER_Bits.MODER8 = 0;
 
-    for (i = 0; i < 9; i++)
-    {
-        GPIOA->MODER &= ~(3 << (i * 2));
-        GPIOA->MODER |=  (1 << (i * 2));
-
-        /* LED inicialmente apagado */
-
-        GPIOA->ODR &= ~(1 << i);
-    }
-
-
-    /* =====================================
-       PB0 - PB8
-       LEDs VERDES
-       Configurar como salida
-       ===================================== */
-
-    for (i = 0; i < 9; i++)
-    {
-        GPIOB->MODER &= ~(3 << (i * 2));
-        GPIOB->MODER |=  (1 << (i * 2));
-
-        /* LED inicialmente apagado */
-
-        GPIOB->ODR &= ~(1 << i);
-    }
-
-
-    /* =====================================
-       PC0 - PC8
-       BOTONES
-       Entrada con PULL-UP
-       ===================================== */
-
-    for (i = 0; i < 9; i++)
-    {
-        /* Configurar como entrada */
-
-        GPIOC->MODER &= ~(3 << (i * 2));
+    /*
+     * Pull-up interno para los botones
+     *
+     * 01 = pull-up
+     */
+    GPIOC->PUPDR_Bits.PUPDR0 = 1;
+    GPIOC->PUPDR_Bits.PUPDR1 = 1;
+    GPIOC->PUPDR_Bits.PUPDR2 = 1;
+    GPIOC->PUPDR_Bits.PUPDR3 = 1;
+    GPIOC->PUPDR_Bits.PUPDR4 = 1;
+    GPIOC->PUPDR_Bits.PUPDR5 = 1;
+    GPIOC->PUPDR_Bits.PUPDR6 = 1;
+    GPIOC->PUPDR_Bits.PUPDR7 = 1;
+    GPIOC->PUPDR_Bits.PUPDR8 = 1;
 
 
-        /* Activar pull-up */
+    /*
+     * LED ROJO
+     *
+     * R1  = PA0
+     * R2  = PA1
+     * R3  = PB10
+     * R4  = PA8
+     * R5  = PA4
+     * R6  = PA6
+     * R7  = PA5
+     * R8  = PA7
+     * R9  = PA3
+     */
 
-        GPIOC->PUPDR &= ~(3 << (i * 2));
-        GPIOC->PUPDR |=  (1 << (i * 2));
-    }
+    GPIOA->MODER_Bits.MODER0 = 1;
+    GPIOA->MODER_Bits.MODER1 = 1;
+    GPIOA->MODER_Bits.MODER3 = 1;
+    GPIOA->MODER_Bits.MODER4 = 1;
+    GPIOA->MODER_Bits.MODER5 = 1;
+    GPIOA->MODER_Bits.MODER6 = 1;
+    GPIOA->MODER_Bits.MODER7 = 1;
+    GPIOA->MODER_Bits.MODER8 = 1;
+
+    GPIOB->MODER_Bits.MODER10 = 1;
 }
 
 
 /*
- * Leer el estado de un pin
- *
- * Devuelve:
- * 0 -> pin en LOW
- * 1 -> pin en HIGH
+ * Leer el estado de un GPIO
  */
-
 uint8_t read_pin_state(volatile GPIO_TypeDef *GPIOx, uint8_t pin)
 {
     if (GPIOx->IDR & (1 << pin))
     {
         return 1;
     }
-
-    return 0;
+    else
+    {
+        return 0;
+    }
 }
 
 
 /*
- * Escribir el estado de un pin
- *
- * state = 0 -> LOW
- * state = 1 -> HIGH
+ * Escribir en un GPIO
  */
-
 void write_pin_state(volatile GPIO_TypeDef *GPIOx, uint8_t pin, uint8_t state)
 {
-    if (state == 1)
+    if (state)
     {
         GPIOx->ODR |= (1 << pin);
     }
@@ -122,41 +102,94 @@ void write_pin_state(volatile GPIO_TypeDef *GPIOx, uint8_t pin, uint8_t state)
 
 
 /*
- * Leer botón
+ * Saber si un botón está presionado
  *
- * Los botones tienen PULL-UP interno:
+ * Los botones tienen pull-up:
  *
- * Sin presionar -> 1
- * Presionado    -> 0
- *
- * Esta función devuelve:
- *
- * 1 -> botón presionado
- * 0 -> botón no presionado
+ * Sin presionar = 1
+ * Presionado    = 0
  */
-
-uint8_t boton_presionado(uint8_t posicion)
+uint8_t boton_presionado(uint8_t boton)
 {
-    if (read_pin_state(GPIOC, posicion) == 0)
+    switch (boton)
     {
-        return 1;
-    }
+        case 1:
+            return read_pin_state(GPIOC, 0) == 0;
 
-    return 0;
+        case 2:
+            return read_pin_state(GPIOC, 1) == 0;
+
+        case 3:
+            return read_pin_state(GPIOC, 2) == 0;
+
+        case 4:
+            return read_pin_state(GPIOC, 3) == 0;
+
+        case 5:
+            return read_pin_state(GPIOC, 4) == 0;
+
+        case 6:
+            return read_pin_state(GPIOC, 5) == 0;
+
+        case 7:
+            return read_pin_state(GPIOC, 6) == 0;
+
+        case 8:
+            return read_pin_state(GPIOC, 7) == 0;
+
+        case 9:
+            return read_pin_state(GPIOC, 8) == 0;
+
+        default:
+            return 0;
+    }
 }
 
 
 /*
- * Controlar LED rojo
- *
- * posicion:
- * 0 -> LED rojo 1
- * 1 -> LED rojo 2
- * ...
- * 8 -> LED rojo 9
+ * Encender o apagar LED rojo
  */
-
-void led_rojo(uint8_t posicion, uint8_t estado)
+void led_rojo(uint8_t led, uint8_t estado)
 {
-    write_pin_state(GPIOA, posicion, estado);
+    switch (led)
+    {
+        case 1:
+            write_pin_state(GPIOA, 0, estado);
+            break;
+
+        case 2:
+            write_pin_state(GPIOA, 1, estado);
+            break;
+
+        case 3:
+            write_pin_state(GPIOB, 10, estado);
+            break;
+
+        case 4:
+            write_pin_state(GPIOA, 8, estado);
+            break;
+
+        case 5:
+            write_pin_state(GPIOA, 4, estado);
+            break;
+
+        case 6:
+            write_pin_state(GPIOA, 6, estado);
+            break;
+
+        case 7:
+            write_pin_state(GPIOA, 5, estado);
+            break;
+
+        case 8:
+            write_pin_state(GPIOA, 7, estado);
+            break;
+
+        case 9:
+            write_pin_state(GPIOA, 3, estado);
+            break;
+
+        default:
+            break;
+    }
 }
