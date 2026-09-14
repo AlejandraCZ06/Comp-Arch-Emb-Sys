@@ -1,266 +1,270 @@
-#include "gpio_config.h"
-#include "stdint.h"
+#include <stdint.h>
 
-uint8_t tablero[9] = {0};
-uint8_t ganador_final = 0;
-uint8_t linea_ganadora[3] = {0, 0, 0};
+typedef struct {
+    volatile uint32_t MODER;
+    volatile uint32_t OTYPER;
+    volatile uint32_t OSPEEDR;
+    volatile uint32_t PUPDR;
+    volatile uint32_t IDR;
+    volatile uint32_t ODR;
+    volatile uint32_t BSRR;
+    volatile uint32_t LCKR;
+    volatile uint32_t AFR[2];
+} GPIO_TypeDef;
 
-#define DEMCR      (*(volatile uint32_t *)0xE000EDFC)
-#define DWT_CTRL   (*(volatile uint32_t *)0xE0001000)
-#define DWT_CYCCNT (*(volatile uint32_t *)0xE0001004)
 
-void iniciar_aleatorio(void)
+#define PERIPH_BASE  0x40000000U
+#define AHB1_BASE    (PERIPH_BASE + 0x20000U)
+
+#define GPIOA_BASE   (AHB1_BASE + 0x0000U)
+#define GPIOB_BASE   (AHB1_BASE + 0x0400U)
+#define GPIOC_BASE   (AHB1_BASE + 0x0800U)
+#define RCC_BASE     (AHB1_BASE + 0x3800U)
+
+#define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)
+#define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)
+#define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)
+
+#define RCC_AHB1ENR ((volatile uint32_t *)(RCC_BASE + 0x30U))
+
+
+// Variables pedidas por el ejercicio
+volatile uint8_t hundreds;
+volatile uint8_t tens;
+volatile uint8_t units;
+
+
+void configurar_salida(GPIO_TypeDef *puerto, uint8_t pin)
 {
-    DEMCR |= (1 << 24);
-    DWT_CYCCNT = 0;
-    DWT_CTRL |= 1;
+    puerto->MODER &= ~(3U << (pin * 2));
+    puerto->MODER |= (1U << (pin * 2));
 }
 
-uint8_t numero_aleatorio(uint8_t max)
-{
-    if (max == 0)
-        return 0;
 
-    return DWT_CYCCNT % max;
+void configurar_entrada_pullup(GPIO_TypeDef *puerto, uint8_t pin)
+{
+    // Entrada
+    puerto->MODER &= ~(3U << (pin * 2));
+
+    // Pull-up interno
+    puerto->PUPDR &= ~(3U << (pin * 2));
+    puerto->PUPDR |= (1U << (pin * 2));
 }
 
-uint8_t ganador(uint8_t jugador)
+
+void escribir(GPIO_TypeDef *puerto, uint8_t pin, uint8_t valor)
 {
-    uint8_t c[8][3] =
-    {
-        {0,1,2},
-        {3,4,5},
-        {6,7,8},
-        {0,3,6},
-        {1,4,7},
-        {2,5,8},
-        {0,4,8},
-        {2,4,6}
-    };
-
-    uint8_t i;
-
-    for (i = 0; i < 8; i++)
-    {
-        if (tablero[c[i][0]] == jugador &&
-            tablero[c[i][1]] == jugador &&
-            tablero[c[i][2]] == jugador)
-        {
-            linea_ganadora[0] = c[i][0];
-            linea_ganadora[1] = c[i][1];
-            linea_ganadora[2] = c[i][2];
-
-            return 1;
-        }
-    }
-
-    return 0;
+    if (valor)
+        puerto->ODR |= (1U << pin);
+    else
+        puerto->ODR &= ~(1U << pin);
 }
 
-uint8_t tablero_lleno(void)
+
+uint8_t leer_dip(void)
 {
-    uint8_t i;
+    uint8_t valor;
 
-    for (i = 0; i < 9; i++)
-    {
-        if (tablero[i] == 0)
-            return 0;
-    }
+    valor = GPIOC->IDR & 0xFF;
 
-    return 1;
+    // Los switches conectan a GND cuando se activan
+    // Por eso invertimos el resultado
+    valor = ~valor;
+
+    return valor;
 }
 
-void limpiar_tablero(void)
+
+void apagar_digitos(void)
 {
-    uint8_t i;
+    // Ánodo común
+    // 1 = apagado
 
-    ganador_final = 0;
-
-    linea_ganadora[0] = 0;
-    linea_ganadora[1] = 0;
-    linea_ganadora[2] = 0;
-
-    for (i = 0; i < 9; i++)
-    {
-        tablero[i] = 0;
-        led_rojo(i + 1, 0);
-        led_azul(i + 1, 0);
-    }
+    escribir(GPIOB, 9, 1);
+    escribir(GPIOB, 10, 1);
+    escribir(GPIOA, 6, 1);
 }
 
-void esperar_soltura(uint8_t boton)
+
+void mostrar_numero(uint8_t numero)
 {
-    while (boton_presionado(boton))
-    {
-    }
+    // Ánodo común
+    // 0 = segmento encendido
+    // 1 = segmento apagado
+
+    // A
+    if (numero == 0 || numero == 2 || numero == 3 ||
+        numero == 5 || numero == 6 || numero == 7 ||
+        numero == 8 || numero == 9)
+        escribir(GPIOA, 8, 0);
+    else
+        escribir(GPIOA, 8, 1);
+
+    // B
+    if (numero == 0 || numero == 1 || numero == 2 ||
+        numero == 3 || numero == 4 || numero == 7 ||
+        numero == 8 || numero == 9)
+        escribir(GPIOA, 9, 0);
+    else
+        escribir(GPIOA, 9, 1);
+
+    // C
+    if (numero == 0 || numero == 1 || numero == 3 ||
+        numero == 4 || numero == 5 || numero == 6 ||
+        numero == 7 || numero == 8 || numero == 9)
+        escribir(GPIOA, 10, 0);
+    else
+        escribir(GPIOA, 10, 1);
+
+    // D
+    if (numero == 0 || numero == 2 || numero == 3 ||
+        numero == 5 || numero == 6 || numero == 8 ||
+        numero == 9)
+        escribir(GPIOB, 3, 0);
+    else
+        escribir(GPIOB, 3, 1);
+
+    // E
+    if (numero == 0 || numero == 2 || numero == 6 || numero == 8)
+        escribir(GPIOB, 4, 0);
+    else
+        escribir(GPIOB, 4, 1);
+
+    // F
+    if (numero == 0 || numero == 4 || numero == 5 ||
+        numero == 6 || numero == 8 || numero == 9)
+        escribir(GPIOB, 5, 0);
+    else
+        escribir(GPIOB, 5, 1);
+
+    // G
+    if (numero == 2 || numero == 3 || numero == 4 ||
+        numero == 5 || numero == 6 || numero == 8 ||
+        numero == 9)
+        escribir(GPIOB, 6, 0);
+    else
+        escribir(GPIOB, 6, 1);
+
+    // DP apagado
+    escribir(GPIOB, 8, 1);
 }
 
-void esperar_B1(void)
+
+void retardo(volatile uint32_t ciclos)
 {
-    while (!boton_start())
-    {
-    }
+    while (ciclos--);
 }
 
-void soltar_B1(void)
-{
-    while (boton_start())
-    {
-    }
-}
-
-uint8_t casilla_libre(void)
-{
-    uint8_t libres[9];
-    uint8_t cantidad = 0;
-    uint8_t i;
-
-    for (i = 0; i < 9; i++)
-    {
-        if (tablero[i] == 0)
-        {
-            libres[cantidad] = i;
-            cantidad++;
-        }
-    }
-
-    if (cantidad == 0)
-        return 9;
-
-    return libres[numero_aleatorio(cantidad)];
-}
-
-void jugada_computadora(void)
-{
-    uint8_t casilla;
-
-    casilla = casilla_libre();
-
-    if (casilla < 9)
-    {
-        tablero[casilla] = 2;
-        led_rojo(casilla + 1, 1);
-    }
-}
-
-void jugar(void)
-{
-    uint8_t i;
-
-    while (1)
-    {
-        for (i = 0; i < 9; i++)
-        {
-            if (boton_presionado(i + 1))
-            {
-                if (tablero[i] != 0)
-                {
-                    esperar_soltura(i + 1);
-                    continue;
-                }
-
-                tablero[i] = 1;
-                led_azul(i + 1, 1);
-
-                esperar_soltura(i + 1);
-
-                if (ganador(1))
-                {
-                    ganador_final = 1;
-                    return;
-                }
-
-                if (tablero_lleno())
-                    return;
-
-                jugada_computadora();
-
-                if (ganador(2))
-                {
-                    ganador_final = 2;
-                    return;
-                }
-
-                if (tablero_lleno())
-                    return;
-            }
-        }
-    }
-}
-
-void titilar_ganador(void)
-{
-    uint8_t i;
-    uint8_t j;
-    volatile uint32_t d;
-
-    if (ganador_final == 0)
-        return;
-
-    for (i = 0; i < 9; i++)
-    {
-        led_rojo(i + 1, 0);
-        led_azul(i + 1, 0);
-    }
-
-    for (j = 0; j < 3; j++)
-    {
-        for (i = 0; i < 3; i++)
-        {
-            if (ganador_final == 1)
-                led_azul(linea_ganadora[i] + 1, 0);
-            else
-                led_rojo(linea_ganadora[i] + 1, 0);
-        }
-
-        for (d = 0; d < 500000; d++)
-        {
-        }
-
-        for (i = 0; i < 3; i++)
-        {
-            if (ganador_final == 1)
-                led_azul(linea_ganadora[i] + 1, 1);
-            else
-                led_rojo(linea_ganadora[i] + 1, 1);
-        }
-
-        for (d = 0; d < 500000; d++)
-        {
-        }
-    }
-}
 
 int main(void)
 {
-    uint8_t turno;
+    uint8_t entrada;
 
-    GPIO_Config();
-    iniciar_aleatorio();
+
+    // =====================================
+    // ACTIVAR GPIOA, GPIOB Y GPIOC
+    // =====================================
+
+    *RCC_AHB1ENR |= (1U << 0);
+    *RCC_AHB1ENR |= (1U << 1);
+    *RCC_AHB1ENR |= (1U << 2);
+
+
+    // =====================================
+    // DIP SWITCH PC0 - PC7
+    // =====================================
+
+    configurar_entrada_pullup(GPIOC, 0);
+    configurar_entrada_pullup(GPIOC, 1);
+    configurar_entrada_pullup(GPIOC, 2);
+    configurar_entrada_pullup(GPIOC, 3);
+    configurar_entrada_pullup(GPIOC, 4);
+    configurar_entrada_pullup(GPIOC, 5);
+    configurar_entrada_pullup(GPIOC, 6);
+    configurar_entrada_pullup(GPIOC, 7);
+
+
+    // =====================================
+    // SEGMENTOS DEL DISPLAY
+    // =====================================
+
+    configurar_salida(GPIOA, 8);    // A
+    configurar_salida(GPIOA, 9);    // B
+    configurar_salida(GPIOA, 10);   // C
+
+    configurar_salida(GPIOB, 3);    // D
+    configurar_salida(GPIOB, 4);    // E
+    configurar_salida(GPIOB, 5);    // F
+    configurar_salida(GPIOB, 6);    // G
+    configurar_salida(GPIOB, 8);    // DP
+
+
+    // =====================================
+    // DIGITOS
+    // =====================================
+
+    configurar_salida(GPIOB, 9);
+    configurar_salida(GPIOB, 10);
+    configurar_salida(GPIOA, 6);
+
 
     while (1)
     {
-        esperar_B1();
+        // =================================
+        // 1. LEER DIP SWITCH
+        // =================================
 
-        turno = numero_aleatorio(2);
+        entrada = leer_dip();
 
-        soltar_B1();
 
-        limpiar_tablero();
+        // =================================
+        // 2. CONVERTIR A CENTENAS,
+        //    DECENAS Y UNIDADES
+        // =================================
 
-        if (turno == 1)
-        {
-            jugada_computadora();
+        hundreds = entrada / 100;
 
-            if (ganador(2))
-                ganador_final = 2;
-        }
+        tens = (entrada / 10) % 10;
 
-        if (ganador_final == 0)
-            jugar();
+        units = entrada % 10;
 
-        titilar_ganador();
+
+        // =================================
+        // 3. MOSTRAR CENTENAS
+        // =================================
+
+        apagar_digitos();
+
+        mostrar_numero(hundreds);
+
+        escribir(GPIOB, 9, 0);
+
+        retardo(1000);
+
+
+        // =================================
+        // 4. MOSTRAR DECENAS
+        // =================================
+
+        apagar_digitos();
+
+        mostrar_numero(tens);
+
+        escribir(GPIOB, 10, 0);
+
+        retardo(1000);
+
+
+        // =================================
+        // 5. MOSTRAR UNIDADES
+        // =================================
+
+        apagar_digitos();
+
+        mostrar_numero(units);
+
+        escribir(GPIOA, 6, 0);
+
+        retardo(1000);
     }
-
-    return 0;
 }
