@@ -217,6 +217,11 @@ void write_pin_state(volatile GPIO_TypeDef *GPIOx, uint8_t pin, uint8_t state)
  * ==================================================
  * BOTON PRESIONADO
  * ==================================================
+ *
+ * Pull-up:
+ *
+ * 1 = sin presionar
+ * 0 = presionado
  */
 
 uint8_t boton_presionado(uint8_t boton)
