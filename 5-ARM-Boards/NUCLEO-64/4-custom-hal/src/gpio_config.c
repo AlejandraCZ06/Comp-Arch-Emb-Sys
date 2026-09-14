@@ -24,7 +24,7 @@ void GPIO_Config(void)
      *
      * Boton 1 -> PC0 -> CN8-6
      * Boton 2 -> PC1 -> CN8-5
-     * Boton 3 -> PB10 -> CN10-16
+     * Boton 3 -> PB8  -> CN10-3  (Cambiado)
      * Boton 4 -> PB13 -> CN10-30
      * Boton 5 -> PB14 -> CN10-28
      * Boton 6 -> PC5 -> CN10-6
@@ -46,10 +46,10 @@ void GPIO_Config(void)
     GPIOC->PUPDR |=  (1 << (1 * 2));
 
 
-    /* Boton 3 -> PB10 */
-    GPIOB->MODER &= ~(3 << (1O * 2));
-    GPIOB->PUPDR &= ~(3 << (10 * 2));
-    GPIOB->PUPDR |=  (1 << (10 * 2));
+    /* Boton 3 -> PB8 (Cambiado) */
+    GPIOB->MODER &= ~(3 << (8 * 2));
+    GPIOB->PUPDR &= ~(3 << (8 * 2));
+    GPIOB->PUPDR |=  (1 << (8 * 2));
 
 
     /* Boton 4 -> PB13 */
@@ -101,7 +101,7 @@ void GPIO_Config(void)
      * Rojo 6 -> PA6 -> CN5-5
      * Rojo 7 -> PA5 -> CN5-6
      * Rojo 8 -> PA7 -> CN5-4
-     * Rojo 9 -> PC9 -> CN10-1
+     * Rojo 9 -> PA3 -> CN10-35
      *
      * GPIO -> resistencia -> LED -> GND
      *
@@ -150,9 +150,9 @@ void GPIO_Config(void)
     GPIOA->MODER |=  (1 << (7 * 2));
 
 
-    /* LED rojo 9 -> PC9 */
-    GPIOC->MODER &= ~(3 << (9 * 2));
-    GPIOC->MODER |=  (1 << (9 * 2));
+    /* LED rojo 9 -> PA3 */
+    GPIOA->MODER &= ~(3 << (3 * 2));
+    GPIOA->MODER |=  (1 << (3 * 2));
 
 
     /*
@@ -169,7 +169,7 @@ void GPIO_Config(void)
     write_pin_state(GPIOA, 6, 0);
     write_pin_state(GPIOA, 5, 0);
     write_pin_state(GPIOA, 7, 0);
-    write_pin_state(GPIOC, 9, 0);
+    write_pin_state(GPIOA, 3, 0);
 }
 
 
@@ -228,7 +228,7 @@ uint8_t boton_presionado(uint8_t boton)
             return read_pin_state(GPIOC, 1) == 0;
 
         case 3:
-            return read_pin_state(GPIOB, 12) == 0;
+            return read_pin_state(GPIOB, 8) == 0; // Cambiado a PB8
 
         case 4:
             return read_pin_state(GPIOB, 13) == 0;
@@ -297,7 +297,7 @@ void led_rojo(uint8_t led, uint8_t estado)
             break;
 
         case 9:
-            write_pin_state(GPIOC, 9, estado);
+            write_pin_state(GPIOA, 3, estado);
             break;
 
         default:
