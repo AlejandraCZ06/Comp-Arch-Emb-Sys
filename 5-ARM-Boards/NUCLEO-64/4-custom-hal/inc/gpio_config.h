@@ -24,23 +24,24 @@ typedef struct
 #define GPIOC_BASE   (AHB1_BASE + 0x0800U)
 #define RCC_BASE     (AHB1_BASE + 0x3800U)
 
-#define GPIOA ((GPIO_TypeDef *)GPIOA_BASE)
-#define GPIOB ((GPIO_TypeDef *)GPIOB_BASE)
-#define GPIOC ((GPIO_TypeDef *)GPIOC_BASE)
+#define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)
+#define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)
+#define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)
 
-#define RCC_AHB1ENR (*(volatile uint32_t *)(RCC_BASE + 0x30U))
+#define RCC_AHB1ENR ((volatile uint32_t *)(RCC_BASE + 0x30U))
 
-void configurar_salidas(void);
+void GPIO_Config(void);
+
+void escribir(GPIO_TypeDef *puerto, uint8_t pin, uint8_t valor);
+
 uint8_t leer_dip(void);
 
-void escribir(GPIO_TypeDef *puerto,
-              uint8_t pin,
-              uint8_t valor);
-
-void mostrar_numero(uint8_t numero);
 void apagar_digitos(void);
 
+void mostrar_numero(uint8_t numero);
+
 void retardo(volatile uint32_t ciclos);
+
 void HALT(void);
 
 #endif
