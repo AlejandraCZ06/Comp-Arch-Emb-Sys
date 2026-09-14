@@ -1,28 +1,28 @@
 #include "gpio_config.h"
 #include "stdint.h"
 
-
-/* ==================================================
+/* =========================================================
  * ESTADO DEL TABLERO
  *
  * 0 = casilla libre
  * 1 = jugador humano (azul)
- * 2 = computador (rojo)
- * ================================================== */
+ * 2 = microcontrolador (rojo)
+ * ========================================================= */
 
 uint8_t tablero[9] = {0};
 
 
-/* ==================================================
- * FUNCIONES PARA DWT
+/* =========================================================
+ * DWT - CONTADOR DE CICLOS
  *
  * Se utiliza el contador de ciclos del Cortex-M4
- * para obtener una semilla variable.
- * ================================================== */
+ * para obtener un valor pseudoaleatorio.
+ * ========================================================= */
 
-#define DEMCR        (*(volatile uint32_t *)0xE000EDFC)
-#define DWT_CTRL     (*(volatile uint32_t *)0xE0001000)
-#define DWT_CYCCNT   (*(volatile uint32_t *)0xE0001004)
+#define DEMCR      (*(volatile uint32_t *)0xE000EDFC)
+#define DWT_CTRL   (*(volatile uint32_t *)0xE0001000)
+#define DWT_CYCCNT (*(volatile uint32_t *)0xE0001004)
+
 
 void iniciar_contador_aleatorio(void)
 {
@@ -43,9 +43,12 @@ uint32_t obtener_aleatorio(void)
 }
 
 
-/* ==================================================
+/* =========================================================
  * COMPROBAR GANADOR
- * ================================================== */
+ *
+ * jugador = 1 -> humano
+ * jugador = 2 -> microcontrolador
+ * ========================================================= */
 
 uint8_t hay_ganador(uint8_t jugador)
 {
@@ -105,9 +108,9 @@ uint8_t hay_ganador(uint8_t jugador)
 }
 
 
-/* ==================================================
+/* =========================================================
  * COMPROBAR EMPATE
- * ================================================== */
+ * ========================================================= */
 
 uint8_t tablero_lleno(void)
 {
@@ -123,9 +126,11 @@ uint8_t tablero_lleno(void)
 }
 
 
-/* ==================================================
+/* =========================================================
  * LIMPIAR TABLERO
- * ================================================== */
+ *
+ * Apaga todos los LEDs y deja todas las casillas libres.
+ * ========================================================= */
 
 void limpiar_tablero(void)
 {
@@ -141,9 +146,9 @@ void limpiar_tablero(void)
 }
 
 
-/* ==================================================
- * ESPERAR A SOLTAR BOTÓN
- * ================================================== */
+/* =========================================================
+ * ESPERAR A QUE SE SUELTE UN BOTÓN DE CASILLA
+ * ========================================================= */
 
 void esperar_soltar_boton(uint8_t boton)
 {
@@ -154,9 +159,37 @@ void esperar_soltar_boton(uint8_t boton)
 }
 
 
-/* ==================================================
+/* =========================================================
+ * ESPERAR A QUE SE SUELTE B1
+ *
+ * B1 está conectado a PC13.
+ * ========================================================= */
+
+void esperar_soltar_B1(void)
+{
+    while (boton_start())
+    {
+        /* Esperar */
+    }
+}
+
+
+/* =========================================================
+ * ESPERAR A QUE SE PRESIONE B1
+ * ========================================================= */
+
+void esperar_B1(void)
+{
+    while (!boton_start())
+    {
+        /* Esperar */
+    }
+}
+
+
+/* =========================================================
  * BUSCAR PRIMERA CASILLA LIBRE
- * ================================================== */
+ * ========================================================= */
 
 uint8_t buscar_casilla_libre(void)
 {
@@ -172,9 +205,12 @@ uint8_t buscar_casilla_libre(void)
 }
 
 
-/* ==================================================
- * JUGADA DEL COMPUTADOR
- * ================================================== */
+/* =========================================================
+ * JUGADA DEL MICROCONTROLADOR
+ *
+ * Por ahora el microcontrolador selecciona
+ * la primera casilla disponible.
+ * ========================================================= */
 
 void jugada_computadora(void)
 {
@@ -186,15 +222,27 @@ void jugada_computadora(void)
     {
         tablero[casilla] = 2;
 
-        /* LED rojo */
+        /* Encender LED rojo */
         led_rojo(casilla + 1, 1);
     }
 }
 
 
-/* ==================================================
+/* =========================================================
  * MAIN
- * ================================================== */
+ *
+ * B1 = PC13
+ *
+ * Cada vez que se presiona B1:
+ *
+ * 1. Se limpia el tablero.
+ * 2. Se obtiene un valor pseudoaleatorio.
+ * 3. Se decide quién comienza.
+ * 4. Se inicia la partida.
+ *
+ * turno = 0 -> humano comienza
+ * turno = 1 -> microcontrolador comienza
+ * ========================================================= */
 
 int main(void)
 {
@@ -202,27 +250,36 @@ int main(void)
     uint8_t juego_terminado;
     uint8_t turno;
 
+    /* Configurar GPIO */
     GPIO_Config();
 
-    /* Iniciar contador utilizado para aleatoriedad */
+    /* Iniciar contador DWT */
     iniciar_contador_aleatorio();
+
+    /* =====================================================
+     * ESPERAR PRIMERA PRESIÓN DE B1
+     * ===================================================== */
+
+    esperar_B1();
+    esperar_soltar_B1();
+
 
     while (1)
     {
-        /* ==========================================
+        /* =================================================
          * NUEVA PARTIDA
-         * ========================================== */
+         *
+         * B1 inicia la partida y decide aleatoriamente
+         * quién comienza.
+         * ================================================= */
 
         limpiar_tablero();
 
         /*
          * Obtener valor pseudoaleatorio.
-         *
-         * Si es par:
-         *     empieza humano
-         *
-         * Si es impar:
-         *     empieza computador
+
+         * Si es 0 -> comienza humano
+         * Si es 1 -> comienza microcontrolador
          */
 
         turno = obtener_aleatorio() & 1;
@@ -230,9 +287,9 @@ int main(void)
         juego_terminado = 0;
 
 
-        /* ==========================================
-         * SI EMPIEZA EL COMPUTADOR
-         * ========================================== */
+        /* =================================================
+         * SI EMPIEZA EL MICROCONTROLADOR
+         * ================================================= */
 
         if (turno == 1)
         {
@@ -245,24 +302,26 @@ int main(void)
         }
 
 
-        /* ==========================================
+        /* =================================================
          * JUEGO
-         * ========================================== */
+         * ================================================= */
 
         while (!juego_terminado)
         {
-            /* ======================================
+            /* =============================================
              * TURNO DEL HUMANO
-             * ====================================== */
+             * ============================================= */
 
             for (i = 0; i < 9; i++)
             {
                 if (boton_presionado(i + 1))
                 {
-                    /*
-                     * Si la casilla ya está ocupada,
-                     * ignorar la jugada.
-                     */
+                    /* =====================================
+                     * CASILLA OCUPADA
+                     *
+                     * Si ya tiene un LED encendido,
+                     * se ignora la jugada.
+                     * ===================================== */
 
                     if (tablero[i] != 0)
                     {
@@ -271,21 +330,22 @@ int main(void)
                     }
 
 
-                    /* ==================================
-                     * JUGADA HUMANA
-                     * ================================== */
+                    /* =====================================
+                     * JUGADA DEL HUMANO
+                     * ===================================== */
 
                     tablero[i] = 1;
 
-                    /* Encender azul */
+                    /* Encender LED azul */
                     led_azul(i + 1, 1);
 
+                    /* Esperar a soltar botón */
                     esperar_soltar_boton(i + 1);
 
 
-                    /* ==================================
+                    /* =====================================
                      * ¿GANÓ EL HUMANO?
-                     * ================================== */
+                     * ===================================== */
 
                     if (hay_ganador(1))
                     {
@@ -294,9 +354,9 @@ int main(void)
                     }
 
 
-                    /* ==================================
+                    /* =====================================
                      * ¿EMPATE?
-                     * ================================== */
+                     * ===================================== */
 
                     if (tablero_lleno())
                     {
@@ -305,16 +365,16 @@ int main(void)
                     }
 
 
-                    /* ==================================
-                     * TURNO COMPUTADOR
-                     * ================================== */
+                    /* =====================================
+                     * TURNO DEL MICROCONTROLADOR
+                     * ===================================== */
 
                     jugada_computadora();
 
 
-                    /* ==================================
-                     * ¿GANÓ EL COMPUTADOR?
-                     * ================================== */
+                    /* =====================================
+                     * ¿GANÓ EL MICROCONTROLADOR?
+                     * ===================================== */
 
                     if (hay_ganador(2))
                     {
@@ -323,9 +383,9 @@ int main(void)
                     }
 
 
-                    /* ==================================
+                    /* =====================================
                      * ¿EMPATE?
-                     * ================================== */
+                     * ===================================== */
 
                     if (tablero_lleno())
                     {
@@ -337,16 +397,20 @@ int main(void)
         }
 
 
-        /* ==========================================
+        /* =================================================
          * PARTIDA TERMINADA
-         * ========================================== */
+         *
+         * Los LEDs permanecen encendidos mostrando
+         * el resultado.
+         *
+         * Para comenzar otra partida:
+         * presionar B1.
+         * ================================================= */
 
-        for (volatile uint32_t delay = 0;
-             delay < 1000000;
-             delay++)
-        {
-            /* Retardo */
-        }
+        esperar_B1();
+
+        /* Esperar a que B1 sea soltado */
+        esperar_soltar_B1();
     }
 
     return 0;
