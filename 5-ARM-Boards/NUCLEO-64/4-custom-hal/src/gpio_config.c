@@ -2,10 +2,15 @@
 
 void GPIO_Config(void)
 {
-    /* Activar reloj de GPIOA, GPIOB y GPIOC */
-    RCC->AHB1ENR |= (1 << 0);
-    RCC->AHB1ENR |= (1 << 1);
-    RCC->AHB1ENR |= (1 << 2);
+    /*
+     * ==================================================
+     * ACTIVAR RELOJ DE GPIOA, GPIOB Y GPIOC
+     * ==================================================
+     */
+
+    RCC->AHB1ENR |= (1 << 0);   // GPIOA
+    RCC->AHB1ENR |= (1 << 1);   // GPIOB
+    RCC->AHB1ENR |= (1 << 2);   // GPIOC
 
     volatile unsigned int dummy;
     dummy = RCC->AHB1ENR;
@@ -13,86 +18,204 @@ void GPIO_Config(void)
 
 
     /*
-     * =========================
+     * ==================================================
      * BOTONES
-     * =========================
+     * ==================================================
      *
-     * Boton 1 -> PC0
-     * Boton 2 -> PC1
-     * Boton 3 -> PC2
-     * Boton 4 -> PC3
-     * Boton 5 -> PC4
-     * Boton 6 -> PC5
-     * Boton 7 -> PC6
-     * Boton 8 -> PC7
-     * Boton 9 -> PC8
+     * Boton 1 -> PC0 -> CN8-6
+     * Boton 2 -> PC1 -> CN8-5
      *
-     * MODER = 00 -> entrada
+     * Boton 3 -> PB12 -> CN10-16
+     * Boton 4 -> PB13 -> CN10-30
+     * Boton 5 -> PB14 -> CN10-28
+     *
+     * Boton 6 -> PC5 -> CN10-6
+     * Boton 7 -> PC6 -> CN10-4
+     * Boton 8 -> PC7 -> CN10-19
+     *
+     * Boton 9 -> PB15 -> CN10-26
+     *
+     * Los botones están conectados:
+     *
+     * GPIO -> BOTON -> GND
+     *
+     * Se utiliza pull-up interno.
+     *
+     * Sin presionar = 1
+     * Presionado    = 0
+     */
+
+
+    /*
+     * BOTON 1 -> PC0
      */
 
     GPIOC->MODER &= ~(3 << (0 * 2));
-    GPIOC->MODER &= ~(3 << (1 * 2));
-    GPIOC->MODER &= ~(3 << (2 * 2));
-    GPIOC->MODER &= ~(3 << (3 * 2));
-    GPIOC->MODER &= ~(3 << (4 * 2));
-    GPIOC->MODER &= ~(3 << (5 * 2));
-    GPIOC->MODER &= ~(3 << (6 * 2));
-    GPIOC->MODER &= ~(3 << (7 * 2));
-    GPIOC->MODER &= ~(3 << (8 * 2));
+    GPIOC->PUPDR &= ~(3 << (0 * 2));
+    GPIOC->PUPDR |=  (1 << (0 * 2));
 
 
     /*
-     * Pull-up interno
-     *
-     * PUPDR:
-     * 00 = sin pull
-     * 01 = pull-up
-     * 10 = pull-down
-     *
-     * Cada pin utiliza 2 bits.
+     * BOTON 2 -> PC1
      */
 
-    GPIOC->PUPDR |= (1 << (0 * 2));
-    GPIOC->PUPDR |= (1 << (1 * 2));
-    GPIOC->PUPDR |= (1 << (2 * 2));
-    GPIOC->PUPDR |= (1 << (3 * 2));
-    GPIOC->PUPDR |= (1 << (4 * 2));
-    GPIOC->PUPDR |= (1 << (5 * 2));
-    GPIOC->PUPDR |= (1 << (6 * 2));
-    GPIOC->PUPDR |= (1 << (7 * 2));
-    GPIOC->PUPDR |= (1 << (8 * 2));
+    GPIOC->MODER &= ~(3 << (1 * 2));
+    GPIOC->PUPDR &= ~(3 << (1 * 2));
+    GPIOC->PUPDR |=  (1 << (1 * 2));
 
 
     /*
-     * =========================
+     * BOTON 3 -> PB12
+     */
+
+    GPIOB->MODER &= ~(3 << (12 * 2));
+    GPIOB->PUPDR &= ~(3 << (12 * 2));
+    GPIOB->PUPDR |=  (1 << (12 * 2));
+
+
+    /*
+     * BOTON 4 -> PB13
+     */
+
+    GPIOB->MODER &= ~(3 << (13 * 2));
+    GPIOB->PUPDR &= ~(3 << (13 * 2));
+    GPIOB->PUPDR |=  (1 << (13 * 2));
+
+
+    /*
+     * BOTON 5 -> PB14
+     */
+
+    GPIOB->MODER &= ~(3 << (14 * 2));
+    GPIOB->PUPDR &= ~(3 << (14 * 2));
+    GPIOB->PUPDR |=  (1 << (14 * 2));
+
+
+    /*
+     * BOTON 6 -> PC5
+     */
+
+    GPIOC->MODER &= ~(3 << (5 * 2));
+    GPIOC->PUPDR &= ~(3 << (5 * 2));
+    GPIOC->PUPDR |=  (1 << (5 * 2));
+
+
+    /*
+     * BOTON 7 -> PC6
+     */
+
+    GPIOC->MODER &= ~(3 << (6 * 2));
+    GPIOC->PUPDR &= ~(3 << (6 * 2));
+    GPIOC->PUPDR |=  (1 << (6 * 2));
+
+
+    /*
+     * BOTON 8 -> PC7
+     */
+
+    GPIOC->MODER &= ~(3 << (7 * 2));
+    GPIOC->PUPDR &= ~(3 << (7 * 2));
+    GPIOC->PUPDR |=  (1 << (7 * 2));
+
+
+    /*
+     * BOTON 9 -> PB15
+     */
+
+    GPIOB->MODER &= ~(3 << (15 * 2));
+    GPIOB->PUPDR &= ~(3 << (15 * 2));
+    GPIOB->PUPDR |=  (1 << (15 * 2));
+
+
+    /*
+     * ==================================================
      * LEDS ROJOS
-     * =========================
+     * ==================================================
      *
-     * Rojo 1 -> PA0
-     * Rojo 2 -> PA1
-     * Rojo 3 -> PB10
-     * Rojo 4 -> PA8
-     * Rojo 5 -> PA4
-     * Rojo 6 -> PA6
-     * Rojo 7 -> PA5
-     * Rojo 8 -> PA7
-     * Rojo 9 -> PA3
+     * Rojo 1 -> PA0 -> CN8-1
+     * Rojo 2 -> PA1 -> CN8-2
+     * Rojo 3 -> PB10 -> CN9-7
+     * Rojo 4 -> PA8 -> CN9-8
+     * Rojo 5 -> PA4 -> CN8-3
+     * Rojo 6 -> PA6 -> CN5-5
+     * Rojo 7 -> PA5 -> CN5-6
+     * Rojo 8 -> PA7 -> CN5-4
+     * Rojo 9 -> PA3 -> CN9-1
+     *
+     * GPIO -> resistencia -> LED -> GND
+     *
+     * 1 = LED encendido
+     * 0 = LED apagado
+     */
+
+
+    /*
+     * PA0 -> LED rojo 1
      */
 
     GPIOA->MODER |= (1 << (0 * 2));
+
+
+    /*
+     * PA1 -> LED rojo 2
+     */
+
     GPIOA->MODER |= (1 << (1 * 2));
-    GPIOA->MODER |= (1 << (3 * 2));
-    GPIOA->MODER |= (1 << (4 * 2));
-    GPIOA->MODER |= (1 << (5 * 2));
-    GPIOA->MODER |= (1 << (6 * 2));
-    GPIOA->MODER |= (1 << (7 * 2));
-    GPIOA->MODER |= (1 << (8 * 2));
+
+
+    /*
+     * PB10 -> LED rojo 3
+     */
 
     GPIOB->MODER |= (1 << (10 * 2));
 
 
     /*
-     * Apagar todos los LEDs rojos al comenzar
+     * PA8 -> LED rojo 4
+     */
+
+    GPIOA->MODER |= (1 << (8 * 2));
+
+
+    /*
+     * PA4 -> LED rojo 5
+     */
+
+    GPIOA->MODER |= (1 << (4 * 2));
+
+
+    /*
+     * PA6 -> LED rojo 6
+     */
+
+    GPIOA->MODER |= (1 << (6 * 2));
+
+
+    /*
+     * PA5 -> LED rojo 7
+     */
+
+    GPIOA->MODER |= (1 << (5 * 2));
+
+
+    /*
+     * PA7 -> LED rojo 8
+     */
+
+    GPIOA->MODER |= (1 << (7 * 2));
+
+
+    /*
+     * PA3 -> LED rojo 9
+     */
+
+    GPIOA->MODER |= (1 << (3 * 2));
+
+
+    /*
+     * ==================================================
+     * APAGAR TODOS LOS LEDS ROJOS AL INICIO
+     * ==================================================
      */
 
     write_pin_state(GPIOA, 0, 0);
@@ -108,8 +231,11 @@ void GPIO_Config(void)
 
 
 /*
- * Leer estado de un pin
+ * ==================================================
+ * LEER GPIO
+ * ==================================================
  */
+
 uint8_t read_pin_state(volatile GPIO_TypeDef *GPIOx, uint8_t pin)
 {
     if (GPIOx->IDR & (1 << pin))
@@ -124,8 +250,11 @@ uint8_t read_pin_state(volatile GPIO_TypeDef *GPIOx, uint8_t pin)
 
 
 /*
- * Escribir estado de un pin
+ * ==================================================
+ * ESCRIBIR GPIO
+ * ==================================================
  */
+
 void write_pin_state(volatile GPIO_TypeDef *GPIOx, uint8_t pin, uint8_t state)
 {
     if (state)
@@ -140,13 +269,17 @@ void write_pin_state(volatile GPIO_TypeDef *GPIOx, uint8_t pin, uint8_t state)
 
 
 /*
- * Leer los botones
+ * ==================================================
+ * SABER SI UN BOTON ESTA PRESIONADO
+ * ==================================================
  *
- * Como usamos pull-up:
+ * Debido al pull-up:
  *
- * Sin presionar = 1
- * Presionado    = 0
+ * 1 = sin presionar
+ * 0 = presionado
+ *
  */
+
 uint8_t boton_presionado(uint8_t boton)
 {
     switch (boton)
@@ -158,13 +291,13 @@ uint8_t boton_presionado(uint8_t boton)
             return read_pin_state(GPIOC, 1) == 0;
 
         case 3:
-            return read_pin_state(GPIOC, 2) == 0;
+            return read_pin_state(GPIOB, 12) == 0;
 
         case 4:
-            return read_pin_state(GPIOC, 3) == 0;
+            return read_pin_state(GPIOB, 13) == 0;
 
         case 5:
-            return read_pin_state(GPIOC, 4) == 0;
+            return read_pin_state(GPIOB, 14) == 0;
 
         case 6:
             return read_pin_state(GPIOC, 5) == 0;
@@ -176,7 +309,7 @@ uint8_t boton_presionado(uint8_t boton)
             return read_pin_state(GPIOC, 7) == 0;
 
         case 9:
-            return read_pin_state(GPIOC, 8) == 0;
+            return read_pin_state(GPIOB, 15) == 0;
 
         default:
             return 0;
@@ -185,8 +318,11 @@ uint8_t boton_presionado(uint8_t boton)
 
 
 /*
- * Controlar los LEDs rojos
+ * ==================================================
+ * CONTROL DE LED ROJO
+ * ==================================================
  */
+
 void led_rojo(uint8_t led, uint8_t estado)
 {
     switch (led)
