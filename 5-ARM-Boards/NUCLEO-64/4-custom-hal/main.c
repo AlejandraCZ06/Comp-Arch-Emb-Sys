@@ -11,6 +11,7 @@ uint8_t ganador_final = 0;
 void iniciar_aleatorio(void)
 {
     DEMCR |= (1 << 24);
+    DWT_CYCCNT = 0;
     DWT_CTRL |= 1;
 }
 
@@ -203,7 +204,7 @@ void titilar_ganador(void)
         }
     }
 
-    /* Titilar 3 veces */
+    /* Titilar ganador 3 veces */
     for (j = 0; j < 3; j++)
     {
         /* Apagar ganador */
@@ -252,15 +253,13 @@ int main(void)
         /* B1 inicia la partida */
         esperar_B1();
 
-        /*
-         * Tomar el contador mientras B1
-         * esta presionado para obtener
-         * una semilla diferente.
-         */
+        /* Obtener aleatorio mientras B1 esta presionado */
         turno = numero_aleatorio(2);
 
+        /* Esperar que B1 sea soltado */
         soltar_B1();
 
+        /* Nueva partida */
         limpiar_tablero();
 
         /* Computadora empieza */
@@ -279,7 +278,7 @@ int main(void)
         /* Mostrar resultado */
         titilar_ganador();
 
-        /* B1 vuelve a iniciar otra partida */
+        /* Esperar B1 para la siguiente partida */
     }
 
     return 0;
