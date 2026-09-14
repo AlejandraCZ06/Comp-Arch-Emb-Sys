@@ -4,12 +4,13 @@ int main(void)
 {
     GPIO_Config();
 
-    /* PA3 como salida */
-    GPIOA->MODER &= ~(3 << (3 * 2));
-    GPIOA->MODER |=  (1 << (3 * 2));
+    /*
+     * PRUEBA LED 9
+     *
+     * LED 9 -> PC9 -> CN10-1
+     */
 
-    /* PA3 en alto */
-    GPIOA->ODR |= (1 << 3);
+    led_rojo(9, 1);
 
     while (1)
     {
