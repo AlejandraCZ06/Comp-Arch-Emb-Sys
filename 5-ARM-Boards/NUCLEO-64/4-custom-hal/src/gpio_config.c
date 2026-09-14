@@ -24,13 +24,13 @@ void GPIO_Config(void)
      *
      * Boton 1 -> PC0
      * Boton 2 -> PC1
-     * Boton 3 -> PB8   (Cambiado a PB8 / CN10-3)
+     * Boton 3 -> PB8   (CN10-3)
      * Boton 4 -> PB13
      * Boton 5 -> PB14
      * Boton 6 -> PC5
      * Boton 7 -> PC6
      * Boton 8 -> PC7
-     * Boton 9 -> PB15
+     * Boton 9 -> PB12  (CN10-26)
      */
 
     /* Boton 1 -> PC0 */
@@ -43,7 +43,7 @@ void GPIO_Config(void)
     GPIOC->PUPDR &= ~(3 << (1 * 2));
     GPIOC->PUPDR |=  (1 << (1 * 2));
 
-    /* Boton 3 -> PB8 (Cambiado) */
+    /* Boton 3 -> PB8 */
     GPIOB->MODER &= ~(3 << (8 * 2));
     GPIOB->PUPDR &= ~(3 << (8 * 2));
     GPIOB->PUPDR |=  (1 << (8 * 2));
@@ -73,10 +73,10 @@ void GPIO_Config(void)
     GPIOC->PUPDR &= ~(3 << (7 * 2));
     GPIOC->PUPDR |=  (1 << (7 * 2));
 
-    /* Boton 9 -> PB15 */
-    GPIOB->MODER &= ~(3 << (15 * 2));
-    GPIOB->PUPDR &= ~(3 << (15 * 2));
-    GPIOB->PUPDR |=  (1 << (15 * 2));
+    /* Boton 9 -> PB12 (CN10-26) */
+    GPIOB->MODER &= ~(3 << (12 * 2));
+    GPIOB->PUPDR &= ~(3 << (12 * 2));
+    GPIOB->PUPDR |=  (1 << (12 * 2));
 
 
     /*
@@ -86,13 +86,13 @@ void GPIO_Config(void)
      *
      * Rojo 1 -> PA0
      * Rojo 2 -> PA1
-     * Rojo 3 -> PB10
+     * Rojo 3 -> PB9   (Cambiado a PB9)
      * Rojo 4 -> PA8
      * Rojo 5 -> PA4
      * Rojo 6 -> PA6
      * Rojo 7 -> PA5
      * Rojo 8 -> PA7
-     * Rojo 9 -> PC9  (LED 9 configurado en el puerto C pin 9)
+     * Rojo 9 -> PC9   (CN10-1)
      */
 
     /* LED rojo 1 -> PA0 */
@@ -103,9 +103,9 @@ void GPIO_Config(void)
     GPIOA->MODER &= ~(3 << (1 * 2));
     GPIOA->MODER |=  (1 << (1 * 2));
 
-    /* LED rojo 3 -> PB10 */
-    GPIOB->MODER &= ~(3 << (10 * 2));
-    GPIOB->MODER |=  (1 << (10 * 2));
+    /* LED rojo 3 -> PB9 */
+    GPIOB->MODER &= ~(3 << (9 * 2));
+    GPIOB->MODER |=  (1 << (9 * 2));
 
     /* LED rojo 4 -> PA8 */
     GPIOA->MODER &= ~(3 << (8 * 2));
@@ -140,13 +140,13 @@ void GPIO_Config(void)
 
     write_pin_state(GPIOA, 0, 0);
     write_pin_state(GPIOA, 1, 0);
-    write_pin_state(GPIOB, 10, 0);
+    write_pin_state(GPIOB, 9, 0);   // Apagar LED 3 en PB9
     write_pin_state(GPIOA, 8, 0);
     write_pin_state(GPIOA, 4, 0);
     write_pin_state(GPIOA, 6, 0);
     write_pin_state(GPIOA, 5, 0);
     write_pin_state(GPIOA, 7, 0);
-    write_pin_state(GPIOC, 9, 0); // Apagar LED 9 en PC9
+    write_pin_state(GPIOC, 9, 0);   // Apagar LED 9 en PC9
 }
 
 
@@ -195,7 +195,7 @@ uint8_t boton_presionado(uint8_t boton)
         case 8:
             return read_pin_state(GPIOC, 7) == 0;
         case 9:
-            return read_pin_state(GPIOB, 15) == 0;
+            return read_pin_state(GPIOB, 12) == 0;  // Botón 9 en PB12 (CN10-26)
         default:
             return 0;
     }
@@ -212,7 +212,7 @@ void led_rojo(uint8_t led, uint8_t estado)
             write_pin_state(GPIOA, 1, estado);
             break;
         case 3:
-            write_pin_state(GPIOB, 10, estado);
+            write_pin_state(GPIOB, 9, estado);  // LED 3 en PB9
             break;
         case 4:
             write_pin_state(GPIOA, 8, estado);
@@ -230,7 +230,7 @@ void led_rojo(uint8_t led, uint8_t estado)
             write_pin_state(GPIOA, 7, estado);
             break;
         case 9:
-            write_pin_state(GPIOC, 9, estado); // LED 9 controlado en GPIOC pin 9
+            write_pin_state(GPIOC, 9, estado);  // LED 9 en PC9
             break;
         default:
             break;
