@@ -30,7 +30,7 @@ void GPIO_Config(void)
      * Boton 6 -> PC5
      * Boton 7 -> PC6
      * Boton 8 -> PC7
-     * Boton 9 -> PB12  (CN10-26)
+     * Boton 9 -> PC4   (CAMBIADO: Movido a PC4 / CN9-33 para evitar conflictos)
      */
 
     /* Boton 1 -> PC0 */
@@ -73,10 +73,10 @@ void GPIO_Config(void)
     GPIOC->PUPDR &= ~(3 << (7 * 2));
     GPIOC->PUPDR |=  (1 << (7 * 2));
 
-    /* Boton 9 -> PB12 (CN10-26) */
-    GPIOB->MODER &= ~(3 << (12 * 2));
-    GPIOB->PUPDR &= ~(3 << (12 * 2));
-    GPIOB->PUPDR |=  (1 << (12 * 2));
+    /* Boton 9 -> PC4 (CAMBIADO) */
+    GPIOC->MODER &= ~(3 << (4 * 2));
+    GPIOC->PUPDR &= ~(3 << (4 * 2));
+    GPIOC->PUPDR |=  (1 << (4 * 2));
 
 
     /*
@@ -86,7 +86,7 @@ void GPIO_Config(void)
      *
      * Rojo 1 -> PA0
      * Rojo 2 -> PA1
-     * Rojo 3 -> PB9   (Cambiado a PB9)
+     * Rojo 3 -> PB9
      * Rojo 4 -> PA8
      * Rojo 5 -> PA4
      * Rojo 6 -> PA6
@@ -140,13 +140,13 @@ void GPIO_Config(void)
 
     write_pin_state(GPIOA, 0, 0);
     write_pin_state(GPIOA, 1, 0);
-    write_pin_state(GPIOB, 9, 0);   // Apagar LED 3 en PB9
+    write_pin_state(GPIOB, 9, 0);
     write_pin_state(GPIOA, 8, 0);
     write_pin_state(GPIOA, 4, 0);
     write_pin_state(GPIOA, 6, 0);
     write_pin_state(GPIOA, 5, 0);
     write_pin_state(GPIOA, 7, 0);
-    write_pin_state(GPIOC, 9, 0);   // Apagar LED 9 en PC9
+    write_pin_state(GPIOC, 9, 0);
 }
 
 
@@ -195,7 +195,7 @@ uint8_t boton_presionado(uint8_t boton)
         case 8:
             return read_pin_state(GPIOC, 7) == 0;
         case 9:
-            return read_pin_state(GPIOB, 12) == 0;  // Botón 9 en PB12 (CN10-26)
+            return read_pin_state(GPIOC, 4) == 0;   // Botón 9 en PC4 (CAMBIADO)
         default:
             return 0;
     }
