@@ -1,7 +1,7 @@
-#ifndef GPIO_H
-#define GPIO_H
+#ifndef __GPIO_CONFIG_H__
+#define __GPIO_CONFIG_H__
 
-#include <stdint.h>
+#include "stdint.h"
 
 typedef struct
 {
@@ -30,7 +30,8 @@ typedef struct
 
 #define RCC_AHB1ENR ((volatile uint32_t *)(RCC_BASE + 0x30U))
 
-void GPIO_Config(void);
+void configurar_salida(GPIO_TypeDef *puerto, uint8_t pin);
+void configurar_entrada_pullup(GPIO_TypeDef *puerto, uint8_t pin);
 
 void escribir(GPIO_TypeDef *puerto, uint8_t pin, uint8_t valor);
 

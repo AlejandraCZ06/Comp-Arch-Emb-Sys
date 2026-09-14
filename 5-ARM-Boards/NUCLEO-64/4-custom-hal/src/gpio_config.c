@@ -1,47 +1,17 @@
-#include "gpio.h"
+#include "gpio_config.h"
 
-static void configurar_salida(GPIO_TypeDef *puerto, uint8_t pin)
+void configurar_salida(GPIO_TypeDef *puerto, uint8_t pin)
 {
     puerto->MODER &= ~(3U << (pin * 2));
-    puerto->MODER |= (1U << (pin * 2));
+    puerto->MODER |=  (1U << (pin * 2));
 }
 
-static void configurar_entrada_pullup(GPIO_TypeDef *puerto, uint8_t pin)
+void configurar_entrada_pullup(GPIO_TypeDef *puerto, uint8_t pin)
 {
     puerto->MODER &= ~(3U << (pin * 2));
 
     puerto->PUPDR &= ~(3U << (pin * 2));
-    puerto->PUPDR |= (1U << (pin * 2));
-}
-
-void GPIO_Config(void)
-{
-    *RCC_AHB1ENR |= (1U << 0);
-    *RCC_AHB1ENR |= (1U << 1);
-    *RCC_AHB1ENR |= (1U << 2);
-
-    configurar_entrada_pullup(GPIOC, 0);
-    configurar_entrada_pullup(GPIOC, 1);
-    configurar_entrada_pullup(GPIOC, 2);
-    configurar_entrada_pullup(GPIOC, 3);
-    configurar_entrada_pullup(GPIOC, 4);
-    configurar_entrada_pullup(GPIOC, 5);
-    configurar_entrada_pullup(GPIOC, 6);
-    configurar_entrada_pullup(GPIOC, 7);
-
-    configurar_salida(GPIOA, 8);
-    configurar_salida(GPIOA, 9);
-    configurar_salida(GPIOA, 10);
-
-    configurar_salida(GPIOB, 3);
-    configurar_salida(GPIOB, 4);
-    configurar_salida(GPIOB, 5);
-    configurar_salida(GPIOB, 6);
-    configurar_salida(GPIOB, 8);
-
-    configurar_salida(GPIOB, 9);
-    configurar_salida(GPIOB, 10);
-    configurar_salida(GPIOA, 6);
+    puerto->PUPDR |=  (1U << (pin * 2));
 }
 
 void escribir(GPIO_TypeDef *puerto, uint8_t pin, uint8_t valor)
@@ -57,7 +27,6 @@ uint8_t leer_dip(void)
     uint8_t valor;
 
     valor = GPIOC->IDR & 0xFF;
-
     valor = ~valor;
 
     return valor;
@@ -72,54 +41,111 @@ void apagar_digitos(void)
 
 void mostrar_numero(uint8_t numero)
 {
-    if (numero == 0 || numero == 2 || numero == 3 ||
-        numero == 5 || numero == 6 || numero == 7 ||
-        numero == 8 || numero == 9)
-        escribir(GPIOA, 8, 0);
-    else
-        escribir(GPIOA, 8, 1);
+    switch (numero)
+    {
+        case 0:
+            escribir(GPIOA, 8, 0);
+            escribir(GPIOA, 9, 0);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 0);
+            escribir(GPIOB, 4, 0);
+            escribir(GPIOB, 5, 0);
+            escribir(GPIOB, 6, 1);
+            break;
 
-    if (numero == 0 || numero == 1 || numero == 2 ||
-        numero == 3 || numero == 4 || numero == 7 ||
-        numero == 8 || numero == 9)
-        escribir(GPIOA, 9, 0);
-    else
-        escribir(GPIOA, 9, 1);
+        case 1:
+            escribir(GPIOA, 8, 1);
+            escribir(GPIOA, 9, 0);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 1);
+            escribir(GPIOB, 4, 1);
+            escribir(GPIOB, 5, 1);
+            escribir(GPIOB, 6, 1);
+            break;
 
-    if (numero == 0 || numero == 1 || numero == 3 ||
-        numero == 4 || numero == 5 || numero == 6 ||
-        numero == 7 || numero == 8 || numero == 9)
-        escribir(GPIOA, 10, 0);
-    else
-        escribir(GPIOA, 10, 1);
+        case 2:
+            escribir(GPIOA, 8, 0);
+            escribir(GPIOA, 9, 0);
+            escribir(GPIOA, 10, 1);
+            escribir(GPIOB, 3, 0);
+            escribir(GPIOB, 4, 0);
+            escribir(GPIOB, 5, 1);
+            escribir(GPIOB, 6, 0);
+            break;
 
-    if (numero == 0 || numero == 2 || numero == 3 ||
-        numero == 5 || numero == 6 || numero == 8 ||
-        numero == 9)
-        escribir(GPIOB, 3, 0);
-    else
-        escribir(GPIOB, 3, 1);
+        case 3:
+            escribir(GPIOA, 8, 0);
+            escribir(GPIOA, 9, 0);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 0);
+            escribir(GPIOB, 4, 1);
+            escribir(GPIOB, 5, 1);
+            escribir(GPIOB, 6, 0);
+            break;
 
-    if (numero == 0 || numero == 2 ||
-        numero == 6 || numero == 8)
-        escribir(GPIOB, 4, 0);
-    else
-        escribir(GPIOB, 4, 1);
+        case 4:
+            escribir(GPIOA, 8, 1);
+            escribir(GPIOA, 9, 0);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 1);
+            escribir(GPIOB, 4, 1);
+            escribir(GPIOB, 5, 0);
+            escribir(GPIOB, 6, 0);
+            break;
 
-    if (numero == 0 || numero == 4 || numero == 5 ||
-        numero == 6 || numero == 8 || numero == 9)
-        escribir(GPIOB, 5, 0);
-    else
-        escribir(GPIOB, 5, 1);
+        case 5:
+            escribir(GPIOA, 8, 0);
+            escribir(GPIOA, 9, 1);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 0);
+            escribir(GPIOB, 4, 1);
+            escribir(GPIOB, 5, 0);
+            escribir(GPIOB, 6, 0);
+            break;
 
-    if (numero == 2 || numero == 3 || numero == 4 ||
-        numero == 5 || numero == 6 || numero == 8 ||
-        numero == 9)
-        escribir(GPIOB, 6, 0);
-    else
-        escribir(GPIOB, 6, 1);
+        case 6:
+            escribir(GPIOA, 8, 0);
+            escribir(GPIOA, 9, 1);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 0);
+            escribir(GPIOB, 4, 0);
+            escribir(GPIOB, 5, 0);
+            escribir(GPIOB, 6, 0);
+            break;
 
-    escribir(GPIOB, 8, 1);
+        case 7:
+            escribir(GPIOA, 8, 0);
+            escribir(GPIOA, 9, 0);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 1);
+            escribir(GPIOB, 4, 1);
+            escribir(GPIOB, 5, 1);
+            escribir(GPIOB, 6, 1);
+            break;
+
+        case 8:
+            escribir(GPIOA, 8, 0);
+            escribir(GPIOA, 9, 0);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 0);
+            escribir(GPIOB, 4, 0);
+            escribir(GPIOB, 5, 0);
+            escribir(GPIOB, 6, 0);
+            break;
+
+        case 9:
+            escribir(GPIOA, 8, 0);
+            escribir(GPIOA, 9, 0);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 0);
+            escribir(GPIOB, 4, 1);
+            escribir(GPIOB, 5, 0);
+            escribir(GPIOB, 6, 0);
+            break;
+
+        default:
+            break;
+    }
 }
 
 void retardo(volatile uint32_t ciclos)
