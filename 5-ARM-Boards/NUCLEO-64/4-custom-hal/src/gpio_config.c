@@ -22,106 +22,73 @@ void GPIO_Config(void)
      * BOTONES
      * ==================================================
      *
-     * Boton 1 -> PC0 -> CN8-6
-     * Boton 2 -> PC1 -> CN8-5
-     *
-     * Boton 3 -> PB12 -> CN10-16
-     * Boton 4 -> PB13 -> CN10-30
-     * Boton 5 -> PB14 -> CN10-28
-     *
-     * Boton 6 -> PC5 -> CN10-6
-     * Boton 7 -> PC6 -> CN10-4
-     * Boton 8 -> PC7 -> CN10-19
-     *
-     * Boton 9 -> PB15 -> CN10-26
-     *
-     * Los botones están conectados:
+     * Boton 1 -> PC0
+     * Boton 2 -> PC1
+     * Boton 3 -> PB12
+     * Boton 4 -> PB13
+     * Boton 5 -> PB14
+     * Boton 6 -> PC5
+     * Boton 7 -> PC6
+     * Boton 8 -> PC7
+     * Boton 9 -> PB15
      *
      * GPIO -> BOTON -> GND
      *
-     * Se utiliza pull-up interno.
-     *
-     * Sin presionar = 1
-     * Presionado    = 0
+     * Pull-up interno:
+     * 1 = sin presionar
+     * 0 = presionado
      */
 
 
-    /*
-     * BOTON 1 -> PC0
-     */
-
+    /* Boton 1 -> PC0 */
     GPIOC->MODER &= ~(3 << (0 * 2));
     GPIOC->PUPDR &= ~(3 << (0 * 2));
     GPIOC->PUPDR |=  (1 << (0 * 2));
 
 
-    /*
-     * BOTON 2 -> PC1
-     */
-
+    /* Boton 2 -> PC1 */
     GPIOC->MODER &= ~(3 << (1 * 2));
     GPIOC->PUPDR &= ~(3 << (1 * 2));
     GPIOC->PUPDR |=  (1 << (1 * 2));
 
 
-    /*
-     * BOTON 3 -> PB12
-     */
-
+    /* Boton 3 -> PB12 */
     GPIOB->MODER &= ~(3 << (12 * 2));
     GPIOB->PUPDR &= ~(3 << (12 * 2));
     GPIOB->PUPDR |=  (1 << (12 * 2));
 
 
-    /*
-     * BOTON 4 -> PB13
-     */
-
+    /* Boton 4 -> PB13 */
     GPIOB->MODER &= ~(3 << (13 * 2));
     GPIOB->PUPDR &= ~(3 << (13 * 2));
     GPIOB->PUPDR |=  (1 << (13 * 2));
 
 
-    /*
-     * BOTON 5 -> PB14
-     */
-
+    /* Boton 5 -> PB14 */
     GPIOB->MODER &= ~(3 << (14 * 2));
     GPIOB->PUPDR &= ~(3 << (14 * 2));
     GPIOB->PUPDR |=  (1 << (14 * 2));
 
 
-    /*
-     * BOTON 6 -> PC5
-     */
-
+    /* Boton 6 -> PC5 */
     GPIOC->MODER &= ~(3 << (5 * 2));
     GPIOC->PUPDR &= ~(3 << (5 * 2));
     GPIOC->PUPDR |=  (1 << (5 * 2));
 
 
-    /*
-     * BOTON 7 -> PC6
-     */
-
+    /* Boton 7 -> PC6 */
     GPIOC->MODER &= ~(3 << (6 * 2));
     GPIOC->PUPDR &= ~(3 << (6 * 2));
     GPIOC->PUPDR |=  (1 << (6 * 2));
 
 
-    /*
-     * BOTON 8 -> PC7
-     */
-
+    /* Boton 8 -> PC7 */
     GPIOC->MODER &= ~(3 << (7 * 2));
     GPIOC->PUPDR &= ~(3 << (7 * 2));
     GPIOC->PUPDR |=  (1 << (7 * 2));
 
 
-    /*
-     * BOTON 9 -> PB15
-     */
-
+    /* Boton 9 -> PB15 */
     GPIOB->MODER &= ~(3 << (15 * 2));
     GPIOB->PUPDR &= ~(3 << (15 * 2));
     GPIOB->PUPDR |=  (1 << (15 * 2));
@@ -132,89 +99,71 @@ void GPIO_Config(void)
      * LEDS ROJOS
      * ==================================================
      *
-     * Rojo 1 -> PA0 -> CN8-1
-     * Rojo 2 -> PA1 -> CN8-2
-     * Rojo 3 -> PB10 -> CN9-7
-     * Rojo 4 -> PA8 -> CN9-8
-     * Rojo 5 -> PA4 -> CN8-3
-     * Rojo 6 -> PA6 -> CN5-5
-     * Rojo 7 -> PA5 -> CN5-6
-     * Rojo 8 -> PA7 -> CN5-4
-     * Rojo 9 -> PA3 -> CN9-1
+     * Rojo 1 -> PA0
+     * Rojo 2 -> PA1
+     * Rojo 3 -> PB10
+     * Rojo 4 -> PA8
+     * Rojo 5 -> PA4
+     * Rojo 6 -> PA6
+     * Rojo 7 -> PA5
+     * Rojo 8 -> PA7
+     * Rojo 9 -> PA3
      *
      * GPIO -> resistencia -> LED -> GND
      *
-     * 1 = LED encendido
-     * 0 = LED apagado
+     * 1 = encendido
+     * 0 = apagado
      */
 
 
-    /*
-     * PA0 -> LED rojo 1
-     */
-
-    GPIOA->MODER |= (1 << (0 * 2));
+    /* LED rojo 1 -> PA0 */
+    GPIOA->MODER &= ~(3 << (0 * 2));
+    GPIOA->MODER |=  (1 << (0 * 2));
 
 
-    /*
-     * PA1 -> LED rojo 2
-     */
-
-    GPIOA->MODER |= (1 << (1 * 2));
+    /* LED rojo 2 -> PA1 */
+    GPIOA->MODER &= ~(3 << (1 * 2));
+    GPIOA->MODER |=  (1 << (1 * 2));
 
 
-    /*
-     * PB10 -> LED rojo 3
-     */
-
-    GPIOB->MODER |= (1 << (10 * 2));
+    /* LED rojo 3 -> PB10 */
+    GPIOB->MODER &= ~(3 << (10 * 2));
+    GPIOB->MODER |=  (1 << (10 * 2));
 
 
-    /*
-     * PA8 -> LED rojo 4
-     */
-
-    GPIOA->MODER |= (1 << (8 * 2));
+    /* LED rojo 4 -> PA8 */
+    GPIOA->MODER &= ~(3 << (8 * 2));
+    GPIOA->MODER |=  (1 << (8 * 2));
 
 
-    /*
-     * PA4 -> LED rojo 5
-     */
-
-    GPIOA->MODER |= (1 << (4 * 2));
+    /* LED rojo 5 -> PA4 */
+    GPIOA->MODER &= ~(3 << (4 * 2));
+    GPIOA->MODER |=  (1 << (4 * 2));
 
 
-    /*
-     * PA6 -> LED rojo 6
-     */
-
-    GPIOA->MODER |= (1 << (6 * 2));
+    /* LED rojo 6 -> PA6 */
+    GPIOA->MODER &= ~(3 << (6 * 2));
+    GPIOA->MODER |=  (1 << (6 * 2));
 
 
-    /*
-     * PA5 -> LED rojo 7
-     */
-
-    GPIOA->MODER |= (1 << (5 * 2));
+    /* LED rojo 7 -> PA5 */
+    GPIOA->MODER &= ~(3 << (5 * 2));
+    GPIOA->MODER |=  (1 << (5 * 2));
 
 
-    /*
-     * PA7 -> LED rojo 8
-     */
-
-    GPIOA->MODER |= (1 << (7 * 2));
+    /* LED rojo 8 -> PA7 */
+    GPIOA->MODER &= ~(3 << (7 * 2));
+    GPIOA->MODER |=  (1 << (7 * 2));
 
 
-    /*
-     * PA3 -> LED rojo 9
-     */
-
-    GPIOA->MODER |= (1 << (3 * 2));
+    /* LED rojo 9 -> PA3 */
+    GPIOA->MODER &= ~(3 << (3 * 2));
+    GPIOA->MODER |=  (1 << (3 * 2));
 
 
     /*
      * ==================================================
-     * APAGAR TODOS LOS LEDS ROJOS AL INICIO
+     * APAGAR TODOS LOS LEDS
      * ==================================================
      */
 
@@ -270,14 +219,8 @@ void write_pin_state(volatile GPIO_TypeDef *GPIOx, uint8_t pin, uint8_t state)
 
 /*
  * ==================================================
- * SABER SI UN BOTON ESTA PRESIONADO
+ * BOTON PRESIONADO
  * ==================================================
- *
- * Debido al pull-up:
- *
- * 1 = sin presionar
- * 0 = presionado
- *
  */
 
 uint8_t boton_presionado(uint8_t boton)
