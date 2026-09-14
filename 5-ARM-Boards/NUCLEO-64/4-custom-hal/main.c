@@ -5,14 +5,12 @@ int main(void)
     GPIO_Config();
 
     /*
-     * PRUEBA DE LOS LEDS 3 Y 9
+     * PRUEBA DIRECTA DE PA3
      *
-     * LED 3 -> PB10
      * LED 9 -> PA3
      */
 
-    led_rojo(3, 1);
-    led_rojo(9, 1);
+    GPIOA->ODR |= (1 << 3);
 
     while (1)
     {
