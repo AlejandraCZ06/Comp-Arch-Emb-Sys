@@ -1,5 +1,6 @@
 #include "gpio_config.h"
 
+
 void GPIO_Config(void)
 {
     /* ==================================================
@@ -11,6 +12,7 @@ void GPIO_Config(void)
     RCC->AHB1ENR |= (1 << 2);   // GPIOC
 
     volatile unsigned int dummy;
+
     dummy = RCC->AHB1ENR;
     dummy = RCC->AHB1ENR;
 
@@ -93,15 +95,15 @@ void GPIO_Config(void)
     /* ==================================================
      * LEDS ROJOS
      *
-     * LED 1 -> PA0
-     * LED 2 -> PA1
-     * LED 3 -> PB9
-     * LED 4 -> PA8
-     * LED 5 -> PA4
-     * LED 6 -> PA6
-     * LED 7 -> PA5
-     * LED 8 -> PA7
-     * LED 9 -> PB15
+     * Rojo 1 -> PA0
+     * Rojo 2 -> PA1
+     * Rojo 3 -> PB9
+     * Rojo 4 -> PA8
+     * Rojo 5 -> PA4
+     * Rojo 6 -> PA6
+     * Rojo 7 -> PA5
+     * Rojo 8 -> PA7
+     * Rojo 9 -> PB15
      *
      * GPIO -> resistencia -> LED -> GND
      *
@@ -156,9 +158,75 @@ void GPIO_Config(void)
 
 
     /* ==================================================
+     * LEDS AZULES
+     *
+     * Azul 1 -> CN8-4  -> PA4
+     * Azul 2 -> CN10-24 -> PB1
+     * Azul 3 -> CN10-22 -> PB2
+     * Azul 4 -> CN10-31 -> PB3
+     * Azul 5 -> CN10-27 -> PB4
+     * Azul 6 -> CN10-29 -> PB5
+     * Azul 7 -> CN10-17 -> PB6
+     * Azul 8 -> CN10-21 -> PB7
+     * Azul 9 -> CN9-1 -> PA3
+     *
+     * GPIO -> resistencia -> LED -> GND
+     *
+     * 1 = encendido
+     * 0 = apagado
+     * ================================================== */
+
+
+    /* LED azul 1 -> PA4 */
+    GPIOA->MODER &= ~(3 << (4 * 2));
+    GPIOA->MODER |=  (1 << (4 * 2));
+
+
+    /* LED azul 2 -> PB1 */
+    GPIOB->MODER &= ~(3 << (1 * 2));
+    GPIOB->MODER |=  (1 << (1 * 2));
+
+
+    /* LED azul 3 -> PB2 */
+    GPIOB->MODER &= ~(3 << (2 * 2));
+    GPIOB->MODER |=  (1 << (2 * 2));
+
+
+    /* LED azul 4 -> PB3 */
+    GPIOB->MODER &= ~(3 << (3 * 2));
+    GPIOB->MODER |=  (1 << (3 * 2));
+
+
+    /* LED azul 5 -> PB4 */
+    GPIOB->MODER &= ~(3 << (4 * 2));
+    GPIOB->MODER |=  (1 << (4 * 2));
+
+
+    /* LED azul 6 -> PB5 */
+    GPIOB->MODER &= ~(3 << (5 * 2));
+    GPIOB->MODER |=  (1 << (5 * 2));
+
+
+    /* LED azul 7 -> PB6 */
+    GPIOB->MODER &= ~(3 << (6 * 2));
+    GPIOB->MODER |=  (1 << (6 * 2));
+
+
+    /* LED azul 8 -> PB7 */
+    GPIOB->MODER &= ~(3 << (7 * 2));
+    GPIOB->MODER |=  (1 << (7 * 2));
+
+
+    /* LED azul 9 -> PA3 */
+    GPIOA->MODER &= ~(3 << (3 * 2));
+    GPIOA->MODER |=  (1 << (3 * 2));
+
+
+    /* ==================================================
      * APAGAR TODOS LOS LEDS AL INICIO
      * ================================================== */
 
+    /* ROJOS */
     write_pin_state(GPIOA, 0, 0);
     write_pin_state(GPIOA, 1, 0);
     write_pin_state(GPIOB, 9, 0);
@@ -168,6 +236,17 @@ void GPIO_Config(void)
     write_pin_state(GPIOA, 5, 0);
     write_pin_state(GPIOA, 7, 0);
     write_pin_state(GPIOB, 15, 0);
+
+    /* AZULES */
+    write_pin_state(GPIOA, 4, 0);
+    write_pin_state(GPIOB, 1, 0);
+    write_pin_state(GPIOB, 2, 0);
+    write_pin_state(GPIOB, 3, 0);
+    write_pin_state(GPIOB, 4, 0);
+    write_pin_state(GPIOB, 5, 0);
+    write_pin_state(GPIOB, 6, 0);
+    write_pin_state(GPIOB, 7, 0);
+    write_pin_state(GPIOA, 3, 0);
 }
 
 
@@ -290,6 +369,56 @@ void led_rojo(uint8_t led, uint8_t estado)
 
         case 9:
             write_pin_state(GPIOB, 15, estado);
+            break;
+
+        default:
+            break;
+    }
+}
+
+
+/* ==================================================
+ * CONTROL DE LED AZUL
+ * ================================================== */
+
+void led_azul(uint8_t led, uint8_t estado)
+{
+    switch (led)
+    {
+        case 1:
+            write_pin_state(GPIOA, 4, estado);
+            break;
+
+        case 2:
+            write_pin_state(GPIOB, 1, estado);
+            break;
+
+        case 3:
+            write_pin_state(GPIOB, 2, estado);
+            break;
+
+        case 4:
+            write_pin_state(GPIOB, 3, estado);
+            break;
+
+        case 5:
+            write_pin_state(GPIOB, 4, estado);
+            break;
+
+        case 6:
+            write_pin_state(GPIOB, 5, estado);
+            break;
+
+        case 7:
+            write_pin_state(GPIOB, 6, estado);
+            break;
+
+        case 8:
+            write_pin_state(GPIOB, 7, estado);
+            break;
+
+        case 9:
+            write_pin_state(GPIOA, 3, estado);
             break;
 
         default:
