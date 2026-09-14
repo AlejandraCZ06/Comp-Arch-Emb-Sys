@@ -22,6 +22,13 @@ void GPIO_Config(void)
      * BOTONES
      * ==================================================
      *
+     * GPIO -> BOTON -> GND
+     *
+     * Pull-up interno:
+     *
+     * Sin presionar = 1
+     * Presionado    = 0
+     *
      * Boton 1 -> PC0 -> CN8-6
      * Boton 2 -> PC1 -> CN8-5
      * Boton 3 -> PB12 -> CN10-16
@@ -102,11 +109,6 @@ void GPIO_Config(void)
      * Rojo 7 -> PA5 -> CN5-6
      * Rojo 8 -> PA7 -> CN5-4
      * Rojo 9 -> PC9 -> CN10-1
-     *
-     * GPIO -> resistencia -> LED -> GND
-     *
-     * 1 = encendido
-     * 0 = apagado
      */
 
 
@@ -157,7 +159,7 @@ void GPIO_Config(void)
 
     /*
      * ==================================================
-     * APAGAR TODOS LOS LEDS AL INICIO
+     * APAGAR TODOS LOS LEDS
      * ==================================================
      */
 
