@@ -18,9 +18,14 @@ void iniciar_aleatorio(void)
 uint8_t ganador(uint8_t jugador)
 {
     uint8_t c[8][3] = {
-        {0,1,2},{3,4,5},{6,7,8},
-        {0,3,6},{1,4,7},{2,5,8},
-        {0,4,8},{2,4,6}
+        {0,1,2},
+        {3,4,5},
+        {6,7,8},
+        {0,3,6},
+        {1,4,7},
+        {2,5,8},
+        {0,4,8},
+        {2,4,6}
     };
 
     uint8_t i;
@@ -60,6 +65,7 @@ void limpiar_tablero(void)
     for (i = 0; i < 9; i++)
     {
         tablero[i] = 0;
+
         led_rojo(i + 1, 0);
         led_azul(i + 1, 0);
     }
@@ -123,18 +129,22 @@ void jugar(void)
         {
             if (boton_presionado(i + 1))
             {
+                /* Casilla ocupada: ignorar */
                 if (tablero[i] != 0)
                 {
                     esperar_soltura(i + 1);
                     continue;
                 }
 
+                /* Registrar jugada */
                 tablero[i] = 1;
+
+                /* Encender LED azul */
                 led_azul(i + 1, 1);
 
                 esperar_soltura(i + 1);
 
-                /* Si gano el humano, termina */
+                /* Si gana el humano, terminar */
                 if (ganador(1))
                 {
                     ganador_final = 1;
@@ -145,10 +155,10 @@ void jugar(void)
                 if (tablero_lleno())
                     return;
 
-                /* Turno computadora */
+                /* JUGADA COMPUTADORA */
                 jugada_computadora();
 
-                /* Si gano computadora, termina */
+                /* Si gana la computadora, terminar */
                 if (ganador(2))
                 {
                     ganador_final = 2;
@@ -167,13 +177,25 @@ void titilar_ganador(void)
 {
     uint8_t i;
     uint8_t j;
+    volatile uint32_t d;
 
     if (ganador_final == 0)
         return;
 
-    for (j = 0; j < 6; j++)
+    /* Apagar LEDs del perdedor */
+    for (i = 0; i < 9; i++)
     {
-        /* APAGAR LEDs DEL GANADOR */
+        if (tablero[i] != ganador_final)
+        {
+            led_rojo(i + 1, 0);
+            led_azul(i + 1, 0);
+        }
+    }
+
+    /* Titilar ganador 3 veces */
+    for (j = 0; j < 3; j++)
+    {
+        /* Apagar ganador */
         for (i = 0; i < 9; i++)
         {
             if (tablero[i] == ganador_final)
@@ -185,6 +207,11 @@ void titilar_ganador(void)
             }
         }
 
+        for (d = 0; d < 500000; d++)
+        {
+        }
+
+        /* Encender ganador */
         for (i = 0; i < 9; i++)
         {
             if (tablero[i] == ganador_final)
@@ -194,6 +221,10 @@ void titilar_ganador(void)
                 else
                     led_rojo(i + 1, 1);
             }
+        }
+
+        for (d = 0; d < 500000; d++)
+        {
         }
     }
 }
@@ -211,9 +242,10 @@ int main(void)
         esperar_B1();
         soltar_B1();
 
+        /* Nueva partida */
         limpiar_tablero();
 
-        /* Elegir quien empieza */
+        /* Elegir aleatoriamente quien empieza */
         turno = DWT_CYCCNT & 1;
 
         /* Si empieza computadora */
@@ -222,23 +254,20 @@ int main(void)
             jugada_computadora();
 
             if (ganador(2))
-            {
                 ganador_final = 2;
-            }
         }
 
-        /* Jugar hasta que alguien gane
-           o se llenen las 9 casillas */
+        /* Jugar partida */
         if (ganador_final == 0)
         {
             jugar();
         }
 
-        /* Si hubo ganador, titilar su color */
+        /* Si hay ganador, titilar 3 veces */
         titilar_ganador();
 
-        /* Luego vuelve a esperar B1
-           para una nueva partida */
+        /* Si fue empate, simplemente queda
+           el tablero completo y espera B1 */
     }
 
     return 0;
