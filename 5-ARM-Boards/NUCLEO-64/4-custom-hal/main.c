@@ -6,7 +6,12 @@ int main(void)
 
     while (1)
     {
-        if (read_pin_state(GPIOC, 10) == 0)
+        /*
+         * BOTON 3 -> PC10
+         * LED 3   -> PB10
+         */
+
+        if (boton_presionado(3))
         {
             led_rojo(3, 1);
         }
