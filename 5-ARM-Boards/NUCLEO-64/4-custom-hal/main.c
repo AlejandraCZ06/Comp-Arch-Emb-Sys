@@ -16,29 +16,19 @@ void iniciar_aleatorio(void)
 
 uint8_t ganador(uint8_t jugador)
 {
-    uint8_t combinaciones[8][3] =
-    {
-        {0,1,2},
-        {3,4,5},
-        {6,7,8},
-        {0,3,6},
-        {1,4,7},
-        {2,5,8},
-        {0,4,8},
-        {2,4,6}
+    uint8_t c[8][3] = {
+        {0,1,2},{3,4,5},{6,7,8},
+        {0,3,6},{1,4,7},{2,5,8},
+        {0,4,8},{2,4,6}
     };
 
     uint8_t i;
 
     for (i = 0; i < 8; i++)
-    {
-        if (tablero[combinaciones[i][0]] == jugador &&
-            tablero[combinaciones[i][1]] == jugador &&
-            tablero[combinaciones[i][2]] == jugador)
-        {
+        if (tablero[c[i][0]] == jugador &&
+            tablero[c[i][1]] == jugador &&
+            tablero[c[i][2]] == jugador)
             return 1;
-        }
-    }
 
     return 0;
 }
@@ -48,10 +38,8 @@ uint8_t tablero_lleno(void)
     uint8_t i;
 
     for (i = 0; i < 9; i++)
-    {
         if (tablero[i] == 0)
             return 0;
-    }
 
     return 1;
 }
@@ -63,7 +51,6 @@ void limpiar_tablero(void)
     for (i = 0; i < 9; i++)
     {
         tablero[i] = 0;
-
         led_rojo(i + 1, 0);
         led_azul(i + 1, 0);
     }
@@ -71,23 +58,17 @@ void limpiar_tablero(void)
 
 void esperar_soltura(uint8_t boton)
 {
-    while (boton_presionado(boton))
-    {
-    }
+    while (boton_presionado(boton));
 }
 
 void esperar_B1(void)
 {
-    while (!boton_start())
-    {
-    }
+    while (!boton_start());
 }
 
 void soltar_B1(void)
 {
-    while (boton_start())
-    {
-    }
+    while (boton_start());
 }
 
 uint8_t casilla_libre(void)
@@ -95,25 +76,19 @@ uint8_t casilla_libre(void)
     uint8_t i;
 
     for (i = 0; i < 9; i++)
-    {
         if (tablero[i] == 0)
             return i;
-    }
 
     return 9;
 }
 
 void jugada_computadora(void)
 {
-    uint8_t casilla;
-
-    casilla = casilla_libre();
+    uint8_t casilla = casilla_libre();
 
     if (casilla < 9)
     {
         tablero[casilla] = 2;
-
-        /* Encender LED rojo inmediatamente */
         led_rojo(casilla + 1, 1);
     }
 }
@@ -128,43 +103,26 @@ void jugar(void)
         {
             if (boton_presionado(i + 1))
             {
-                /* Si la casilla ya esta ocupada, ignorar */
                 if (tablero[i] != 0)
                 {
                     esperar_soltura(i + 1);
                     continue;
                 }
 
-                /* Registrar jugada humana */
                 tablero[i] = 1;
 
-                /* Encender LED azul inmediatamente */
+                /* ENCENDER ANTES DE COMPROBAR */
                 led_azul(i + 1, 1);
 
-                /* Esperar a soltar boton */
                 esperar_soltura(i + 1);
 
-                /* Revisar victoria humana */
-                if (ganador(1))
+                if (ganador(1) || tablero_lleno())
                     return;
 
-                /* Revisar empate */
-                if (tablero_lleno())
-                    return;
-
-                /* Turno computadora */
                 jugada_computadora();
 
-                /* Revisar victoria computadora */
-                if (ganador(2))
+                if (ganador(2) || tablero_lleno())
                     return;
-
-                /* Revisar empate */
-                if (tablero_lleno())
-                    return;
-
-                /* Termino el turno */
-                return;
             }
         }
     }
@@ -177,44 +135,20 @@ int main(void)
     GPIO_Config();
     iniciar_aleatorio();
 
-    /*
-     * Esperar B1 desde el comienzo.
-     * B1 = PC13, activo en HIGH.
-     */
     esperar_B1();
     soltar_B1();
 
     while (1)
     {
-        /* Nueva partida */
         limpiar_tablero();
 
-        /* Elegir aleatoriamente quien empieza */
         turno = DWT_CYCCNT & 1;
 
-        /*
-         * turno = 0 -> humano empieza
-         * turno = 1 -> computadora empieza
-         */
         if (turno == 1)
-        {
             jugada_computadora();
 
-            if (ganador(2) || tablero_lleno())
-            {
-                esperar_B1();
-                soltar_B1();
-                continue;
-            }
-        }
-
-        /* Jugar partida */
         jugar();
 
-        /*
-         * Esperar B1 para comenzar
-         * una nueva partida.
-         */
         esperar_B1();
         soltar_B1();
     }
