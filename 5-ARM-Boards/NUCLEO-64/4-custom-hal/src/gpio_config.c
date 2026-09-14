@@ -92,7 +92,7 @@ void GPIO_Config(void)
      * Rojo 6 -> PA6
      * Rojo 7 -> PA5
      * Rojo 8 -> PA7
-     * Rojo 9 -> PB15  (LED 9 cambiado a PB15)
+     * Rojo 9 -> PC8   (LED 9 movido a PC8 para liberar PC9)
      */
 
     /* LED rojo 1 -> PA0 */
@@ -127,9 +127,9 @@ void GPIO_Config(void)
     GPIOA->MODER &= ~(3 << (7 * 2));
     GPIOA->MODER |=  (1 << (7 * 2));
 
-    /* LED rojo 9 -> PB15 (CAMBIADO) */
-    GPIOB->MODER &= ~(3 << (15 * 2));
-    GPIOB->MODER |=  (1 << (15 * 2));
+    /* LED rojo 9 -> PC8 */
+    GPIOC->MODER &= ~(3 << (8 * 2));
+    GPIOC->MODER |=  (1 << (8 * 2));
 
 
     /*
@@ -146,7 +146,7 @@ void GPIO_Config(void)
     write_pin_state(GPIOA, 6, 0);
     write_pin_state(GPIOA, 5, 0);
     write_pin_state(GPIOA, 7, 0);
-    write_pin_state(GPIOB, 15, 0);  // Apagar LED 9 en PB15
+    write_pin_state(GPIOC, 8, 0);   // Apagar LED 9 en PC8
 }
 
 
@@ -230,7 +230,7 @@ void led_rojo(uint8_t led, uint8_t estado)
             write_pin_state(GPIOA, 7, estado);
             break;
         case 9:
-            write_pin_state(GPIOB, 15, estado); // LED 9 en PB15 (CAMBIADO)
+            write_pin_state(GPIOC, 8, estado);  // LED 9 en PC8
             break;
         default:
             break;
