@@ -30,9 +30,9 @@ int main(void)
     configurar_salida(GPIOB, 5);
     configurar_salida(GPIOB, 6);
     configurar_salida(GPIOB, 8);
-
     configurar_salida(GPIOB, 9);
     configurar_salida(GPIOB, 10);
+
     configurar_salida(GPIOA, 6);
 
     while (1)

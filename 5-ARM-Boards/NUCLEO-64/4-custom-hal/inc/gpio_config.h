@@ -18,7 +18,6 @@ typedef struct
 
 #define PERIPH_BASE  0x40000000U
 #define AHB1_BASE    (PERIPH_BASE + 0x20000U)
-
 #define GPIOA_BASE   (AHB1_BASE + 0x0000U)
 #define GPIOB_BASE   (AHB1_BASE + 0x0400U)
 #define GPIOC_BASE   (AHB1_BASE + 0x0800U)
@@ -32,17 +31,11 @@ typedef struct
 
 void configurar_salida(GPIO_TypeDef *puerto, uint8_t pin);
 void configurar_entrada_pullup(GPIO_TypeDef *puerto, uint8_t pin);
-
 void escribir(GPIO_TypeDef *puerto, uint8_t pin, uint8_t valor);
-
 uint8_t leer_dip(void);
-
 void apagar_digitos(void);
-
 void mostrar_numero(uint8_t numero);
-
 void retardo(volatile uint32_t ciclos);
-
 void HALT(void);
 
 #endif

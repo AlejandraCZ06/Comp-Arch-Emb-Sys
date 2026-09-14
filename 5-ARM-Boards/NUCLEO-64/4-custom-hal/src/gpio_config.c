@@ -3,15 +3,14 @@
 void configurar_salida(GPIO_TypeDef *puerto, uint8_t pin)
 {
     puerto->MODER &= ~(3U << (pin * 2));
-    puerto->MODER |=  (1U << (pin * 2));
+    puerto->MODER |= (1U << (pin * 2));
 }
 
 void configurar_entrada_pullup(GPIO_TypeDef *puerto, uint8_t pin)
 {
     puerto->MODER &= ~(3U << (pin * 2));
-
     puerto->PUPDR &= ~(3U << (pin * 2));
-    puerto->PUPDR |=  (1U << (pin * 2));
+    puerto->PUPDR |= (1U << (pin * 2));
 }
 
 void escribir(GPIO_TypeDef *puerto, uint8_t pin, uint8_t valor)
