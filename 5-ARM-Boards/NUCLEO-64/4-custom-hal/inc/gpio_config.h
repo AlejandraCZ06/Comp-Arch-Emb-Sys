@@ -13,9 +13,9 @@ void write_pin_state(volatile GPIO_TypeDef *GPIOx,
                      uint8_t state);
 
 uint8_t boton_presionado(uint8_t boton);
+uint8_t boton_start(void);
 
 void led_rojo(uint8_t led, uint8_t estado);
-
 void led_azul(uint8_t led, uint8_t estado);
 
 #endif
