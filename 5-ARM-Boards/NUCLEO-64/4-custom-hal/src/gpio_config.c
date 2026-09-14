@@ -1,6 +1,5 @@
 #include "gpio_config.h"
 
-
 static void configurar_entrada_pullup(volatile GPIO_TypeDef *GPIOx,
                                       uint8_t pin)
 {
@@ -9,7 +8,6 @@ static void configurar_entrada_pullup(volatile GPIO_TypeDef *GPIOx,
     GPIOx->PUPDR |=  (1 << (pin * 2));
 }
 
-
 static void configurar_entrada(volatile GPIO_TypeDef *GPIOx,
                                uint8_t pin)
 {
@@ -17,14 +15,12 @@ static void configurar_entrada(volatile GPIO_TypeDef *GPIOx,
     GPIOx->PUPDR &= ~(3 << (pin * 2));
 }
 
-
 static void configurar_salida(volatile GPIO_TypeDef *GPIOx,
                               uint8_t pin)
 {
     GPIOx->MODER &= ~(3 << (pin * 2));
     GPIOx->MODER |=  (1 << (pin * 2));
 }
-
 
 void GPIO_Config(void)
 {
@@ -36,9 +32,7 @@ void GPIO_Config(void)
     dummy = RCC->AHB1ENR;
     dummy = RCC->AHB1ENR;
 
-
-    /* Botones */
-
+    /* BOTONES EXTERNOS */
     configurar_entrada_pullup(GPIOC, 0);
     configurar_entrada_pullup(GPIOC, 1);
     configurar_entrada_pullup(GPIOB, 8);
@@ -49,14 +43,10 @@ void GPIO_Config(void)
     configurar_entrada_pullup(GPIOC, 7);
     configurar_entrada_pullup(GPIOA, 10);
 
-
-    /* B1 */
-
+    /* B1 DE LA NUCLEO */
     configurar_entrada(GPIOC, 13);
 
-
-    /* LEDs rojos */
-
+    /* LEDS ROJOS */
     configurar_salida(GPIOA, 0);
     configurar_salida(GPIOA, 1);
     configurar_salida(GPIOB, 9);
@@ -67,9 +57,7 @@ void GPIO_Config(void)
     configurar_salida(GPIOA, 7);
     configurar_salida(GPIOB, 15);
 
-
-    /* LEDs azules */
-
+    /* LEDS AZULES */
     configurar_salida(GPIOB, 7);
     configurar_salida(GPIOB, 1);
     configurar_salida(GPIOB, 2);
@@ -80,9 +68,7 @@ void GPIO_Config(void)
     configurar_salida(GPIOC, 8);
     configurar_salida(GPIOA, 9);
 
-
-    /* Apagar LEDs */
-
+    /* APAGAR LEDS ROJOS */
     write_pin_state(GPIOA, 0, 0);
     write_pin_state(GPIOA, 1, 0);
     write_pin_state(GPIOB, 9, 0);
@@ -93,6 +79,7 @@ void GPIO_Config(void)
     write_pin_state(GPIOA, 7, 0);
     write_pin_state(GPIOB, 15, 0);
 
+    /* APAGAR LEDS AZULES */
     write_pin_state(GPIOB, 7, 0);
     write_pin_state(GPIOB, 1, 0);
     write_pin_state(GPIOB, 2, 0);
@@ -104,12 +91,10 @@ void GPIO_Config(void)
     write_pin_state(GPIOA, 9, 0);
 }
 
-
 uint8_t read_pin_state(volatile GPIO_TypeDef *GPIOx, uint8_t pin)
 {
     return (GPIOx->IDR & (1 << pin)) ? 1 : 0;
 }
-
 
 void write_pin_state(volatile GPIO_TypeDef *GPIOx,
                      uint8_t pin,
@@ -120,7 +105,6 @@ void write_pin_state(volatile GPIO_TypeDef *GPIOx,
     else
         GPIOx->ODR &= ~(1 << pin);
 }
-
 
 uint8_t boton_presionado(uint8_t boton)
 {
@@ -139,12 +123,10 @@ uint8_t boton_presionado(uint8_t boton)
     }
 }
 
-
 uint8_t boton_start(void)
 {
     return read_pin_state(GPIOC, 13) == 1;
 }
-
 
 void led_rojo(uint8_t led, uint8_t estado)
 {
@@ -162,7 +144,6 @@ void led_rojo(uint8_t led, uint8_t estado)
         default: break;
     }
 }
-
 
 void led_azul(uint8_t led, uint8_t estado)
 {
