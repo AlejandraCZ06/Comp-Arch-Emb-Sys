@@ -1,145 +1,155 @@
 #include "gpio_config.h"
 
-void configurar_salida(GPIO_TypeDef *puerto, uint8_t pin)
+static void entrada_pullup(volatile GPIO_TypeDef *GPIOx, uint8_t pin)
 {
-    puerto->MODER &= ~(3U << (pin * 2));
-    puerto->MODER |= (1U << (pin * 2));
+    GPIOx->MODER &= ~(3 << (pin * 2));
+    GPIOx->PUPDR &= ~(3 << (pin * 2));
+    GPIOx->PUPDR |=  (1 << (pin * 2));
 }
 
-void escribir(GPIO_TypeDef *puerto, uint8_t pin, uint8_t valor)
+static void entrada_pulldown(volatile GPIO_TypeDef *GPIOx, uint8_t pin)
 {
-    if (valor)
-        puerto->ODR |= (1U << pin);
-    else
-        puerto->ODR &= ~(1U << pin);
+    GPIOx->MODER &= ~(3 << (pin * 2));
+    GPIOx->PUPDR &= ~(3 << (pin * 2));
+    GPIOx->PUPDR |=  (2 << (pin * 2));
+}
+
+static void salida(volatile GPIO_TypeDef *GPIOx, uint8_t pin)
+{
+    GPIOx->MODER &= ~(3 << (pin * 2));
+    GPIOx->MODER |=  (1 << (pin * 2));
 }
 
 void GPIO_Config(void)
 {
-    *RCC_AHB1ENR |= (1U << 0);
-    *RCC_AHB1ENR |= (1U << 1);
+    RCC->AHB1ENR |= (1 << 0);
+    RCC->AHB1ENR |= (1 << 1);
+    RCC->AHB1ENR |= (1 << 2);
 
-    configurar_salida(GPIOA, 8);
-    configurar_salida(GPIOA, 9);
-    configurar_salida(GPIOA, 10);
+    volatile unsigned int dummy;
+    dummy = RCC->AHB1ENR;
+    dummy = RCC->AHB1ENR;
 
-    configurar_salida(GPIOB, 3);
-    configurar_salida(GPIOB, 4);
-    configurar_salida(GPIOB, 5);
-    configurar_salida(GPIOB, 6);
-    configurar_salida(GPIOB, 8);
+    entrada_pullup(GPIOC, 0);
+    entrada_pullup(GPIOC, 1);
+    entrada_pullup(GPIOB, 8);
+    entrada_pullup(GPIOB, 13);
+    entrada_pullup(GPIOB, 14);
+    entrada_pullup(GPIOC, 5);
+    entrada_pullup(GPIOC, 6);
+    entrada_pullup(GPIOC, 7);
+    entrada_pullup(GPIOA, 10);
 
-    configurar_salida(GPIOB, 9);
-    configurar_salida(GPIOB, 10);
-    configurar_salida(GPIOA, 6);
+    entrada_pulldown(GPIOC, 13);
+
+    salida(GPIOA, 0);
+    salida(GPIOA, 1);
+    salida(GPIOB, 9);
+    salida(GPIOA, 8);
+    salida(GPIOA, 4);
+    salida(GPIOA, 6);
+    salida(GPIOA, 5);
+    salida(GPIOA, 7);
+    salida(GPIOB, 15);
+
+    salida(GPIOB, 7);
+    salida(GPIOB, 1);
+    salida(GPIOB, 2);
+    salida(GPIOB, 3);
+    salida(GPIOB, 4);
+    salida(GPIOB, 5);
+    salida(GPIOB, 6);
+    salida(GPIOC, 8);
+    salida(GPIOA, 9);
+
+    write_pin_state(GPIOA, 0, 0);
+    write_pin_state(GPIOA, 1, 0);
+    write_pin_state(GPIOB, 9, 0);
+    write_pin_state(GPIOA, 8, 0);
+    write_pin_state(GPIOA, 4, 0);
+    write_pin_state(GPIOA, 6, 0);
+    write_pin_state(GPIOA, 5, 0);
+    write_pin_state(GPIOA, 7, 0);
+    write_pin_state(GPIOB, 15, 0);
+
+    write_pin_state(GPIOB, 7, 0);
+    write_pin_state(GPIOB, 1, 0);
+    write_pin_state(GPIOB, 2, 0);
+    write_pin_state(GPIOB, 3, 0);
+    write_pin_state(GPIOB, 4, 0);
+    write_pin_state(GPIOB, 5, 0);
+    write_pin_state(GPIOB, 6, 0);
+    write_pin_state(GPIOC, 8, 0);
+    write_pin_state(GPIOA, 9, 0);
 }
 
-void apagar_digitos(void)
+uint8_t read_pin_state(volatile GPIO_TypeDef *GPIOx, uint8_t pin)
 {
-    escribir(GPIOB, 9, 1);
-    escribir(GPIOB, 10, 1);
-    escribir(GPIOA, 6, 1);
+    return (GPIOx->IDR & (1 << pin)) ? 1 : 0;
 }
 
-void mostrar_numero(uint8_t numero)
+void write_pin_state(volatile GPIO_TypeDef *GPIOx,
+                     uint8_t pin,
+                     uint8_t state)
 {
-    if (numero == 0 || numero == 2 || numero == 3 ||
-        numero == 5 || numero == 6 || numero == 7 ||
-        numero == 8 || numero == 9)
-        escribir(GPIOA, 8, 0);
+    if (state)
+        GPIOx->ODR |= (1 << pin);
     else
-        escribir(GPIOA, 8, 1);
-
-    if (numero == 0 || numero == 1 || numero == 2 ||
-        numero == 3 || numero == 4 || numero == 7 ||
-        numero == 8 || numero == 9)
-        escribir(GPIOA, 9, 0);
-    else
-        escribir(GPIOA, 9, 1);
-
-    if (numero == 0 || numero == 1 || numero == 3 ||
-        numero == 4 || numero == 5 || numero == 6 ||
-        numero == 7 || numero == 8 || numero == 9)
-        escribir(GPIOA, 10, 0);
-    else
-        escribir(GPIOA, 10, 1);
-
-    if (numero == 0 || numero == 2 || numero == 3 ||
-        numero == 5 || numero == 6 || numero == 8 ||
-        numero == 9)
-        escribir(GPIOB, 3, 0);
-    else
-        escribir(GPIOB, 3, 1);
-
-    if (numero == 0 || numero == 2 ||
-        numero == 6 || numero == 8)
-        escribir(GPIOB, 4, 0);
-    else
-        escribir(GPIOB, 4, 1);
-
-    if (numero == 0 || numero == 4 || numero == 5 ||
-        numero == 6 || numero == 8 || numero == 9)
-        escribir(GPIOB, 5, 0);
-    else
-        escribir(GPIOB, 5, 1);
-
-    if (numero == 2 || numero == 3 || numero == 4 ||
-        numero == 5 || numero == 6 || numero == 8 ||
-        numero == 9)
-        escribir(GPIOB, 6, 0);
-    else
-        escribir(GPIOB, 6, 1);
-
-    escribir(GPIOB, 8, 1);
+        GPIOx->ODR &= ~(1 << pin);
 }
 
-void retardo(volatile uint32_t ciclos)
+uint8_t boton_presionado(uint8_t boton)
 {
-    while (ciclos--)
+    switch (boton)
     {
+        case 1: return read_pin_state(GPIOC, 0) == 0;
+        case 2: return read_pin_state(GPIOC, 1) == 0;
+        case 3: return read_pin_state(GPIOB, 8) == 0;
+        case 4: return read_pin_state(GPIOB, 13) == 0;
+        case 5: return read_pin_state(GPIOB, 14) == 0;
+        case 6: return read_pin_state(GPIOC, 5) == 0;
+        case 7: return read_pin_state(GPIOC, 6) == 0;
+        case 8: return read_pin_state(GPIOC, 7) == 0;
+        case 9: return read_pin_state(GPIOA, 10) == 0;
+        default: return 0;
     }
 }
 
-void mostrar_3_digitos(uint16_t numero)
+uint8_t boton_start(void)
 {
-    uint8_t centenas;
-    uint8_t decenas;
-    uint8_t unidades;
-
-    centenas = numero / 100;
-    decenas = (numero / 10) % 10;
-    unidades = numero % 10;
-
-    apagar_digitos();
-    mostrar_numero(centenas);
-    escribir(GPIOB, 9, 0);
-    retardo(1000);
-
-    apagar_digitos();
-    mostrar_numero(decenas);
-    escribir(GPIOB, 10, 0);
-    retardo(1000);
-
-    apagar_digitos();
-    mostrar_numero(unidades);
-    escribir(GPIOA, 6, 0);
-    retardo(1000);
+    return read_pin_state(GPIOC, 13) == 1;
 }
 
-void mostrar_3_digitos_250ms(uint16_t numero)
+void led_rojo(uint8_t led, uint8_t estado)
 {
-    uint16_t i;
-
-    for (i = 0; i < 250; i++)
+    switch (led)
     {
-        mostrar_3_digitos(numero);
+        case 1: write_pin_state(GPIOA, 0, estado); break;
+        case 2: write_pin_state(GPIOA, 1, estado); break;
+        case 3: write_pin_state(GPIOB, 9, estado); break;
+        case 4: write_pin_state(GPIOA, 8, estado); break;
+        case 5: write_pin_state(GPIOA, 4, estado); break;
+        case 6: write_pin_state(GPIOA, 6, estado); break;
+        case 7: write_pin_state(GPIOA, 5, estado); break;
+        case 8: write_pin_state(GPIOA, 7, estado); break;
+        case 9: write_pin_state(GPIOB, 15, estado); break;
+        default: break;
     }
 }
 
-void HALT(void)
+void led_azul(uint8_t led, uint8_t estado)
 {
-    while (1)
+    switch (led)
     {
-        __asm volatile ("nop");
+        case 1: write_pin_state(GPIOB, 7, estado); break;
+        case 2: write_pin_state(GPIOB, 1, estado); break;
+        case 3: write_pin_state(GPIOB, 2, estado); break;
+        case 4: write_pin_state(GPIOB, 3, estado); break;
+        case 5: write_pin_state(GPIOB, 4, estado); break;
+        case 6: write_pin_state(GPIOB, 5, estado); break;
+        case 7: write_pin_state(GPIOB, 6, estado); break;
+        case 8: write_pin_state(GPIOC, 8, estado); break;
+        case 9: write_pin_state(GPIOA, 9, estado); break;
+        default: break;
     }
 }
