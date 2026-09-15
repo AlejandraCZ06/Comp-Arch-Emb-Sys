@@ -6,6 +6,13 @@ void configurar_salida(GPIO_TypeDef *puerto, uint8_t pin)
     puerto->MODER |= (1U << (pin * 2));
 }
 
+void configurar_entrada_pullup(GPIO_TypeDef *puerto, uint8_t pin)
+{
+    puerto->MODER &= ~(3U << (pin * 2));
+    puerto->PUPDR &= ~(3U << (pin * 2));
+    puerto->PUPDR |= (1U << (pin * 2));
+}
+
 void escribir(GPIO_TypeDef *puerto, uint8_t pin, uint8_t valor)
 {
     if (valor)
@@ -14,24 +21,14 @@ void escribir(GPIO_TypeDef *puerto, uint8_t pin, uint8_t valor)
         puerto->ODR &= ~(1U << pin);
 }
 
-void GPIO_Config(void)
+uint8_t leer_dip(void)
 {
-    *RCC_AHB1ENR |= (1U << 0);
-    *RCC_AHB1ENR |= (1U << 1);
+    uint8_t valor;
 
-    configurar_salida(GPIOA, 8);
-    configurar_salida(GPIOA, 9);
-    configurar_salida(GPIOA, 10);
+    valor = GPIOC->IDR & 0xFF;
+    valor = ~valor;
 
-    configurar_salida(GPIOB, 3);
-    configurar_salida(GPIOB, 4);
-    configurar_salida(GPIOB, 5);
-    configurar_salida(GPIOB, 6);
-    configurar_salida(GPIOB, 8);
-
-    configurar_salida(GPIOB, 9);
-    configurar_salida(GPIOB, 10);
-    configurar_salida(GPIOA, 6);
+    return valor;
 }
 
 void apagar_digitos(void)
@@ -43,96 +40,117 @@ void apagar_digitos(void)
 
 void mostrar_numero(uint8_t numero)
 {
-    if (numero == 0 || numero == 2 || numero == 3 ||
-        numero == 5 || numero == 6 || numero == 7 ||
-        numero == 8 || numero == 9)
-        escribir(GPIOA, 8, 0);
-    else
-        escribir(GPIOA, 8, 1);
+    switch (numero)
+    {
+        case 0:
+            escribir(GPIOA, 8, 0);
+            escribir(GPIOA, 9, 0);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 0);
+            escribir(GPIOB, 4, 0);
+            escribir(GPIOB, 5, 0);
+            escribir(GPIOB, 6, 1);
+            break;
 
-    if (numero == 0 || numero == 1 || numero == 2 ||
-        numero == 3 || numero == 4 || numero == 7 ||
-        numero == 8 || numero == 9)
-        escribir(GPIOA, 9, 0);
-    else
-        escribir(GPIOA, 9, 1);
+        case 1:
+            escribir(GPIOA, 8, 1);
+            escribir(GPIOA, 9, 0);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 1);
+            escribir(GPIOB, 4, 1);
+            escribir(GPIOB, 5, 1);
+            escribir(GPIOB, 6, 1);
+            break;
 
-    if (numero == 0 || numero == 1 || numero == 3 ||
-        numero == 4 || numero == 5 || numero == 6 ||
-        numero == 7 || numero == 8 || numero == 9)
-        escribir(GPIOA, 10, 0);
-    else
-        escribir(GPIOA, 10, 1);
+        case 2:
+            escribir(GPIOA, 8, 0);
+            escribir(GPIOA, 9, 0);
+            escribir(GPIOA, 10, 1);
+            escribir(GPIOB, 3, 0);
+            escribir(GPIOB, 4, 0);
+            escribir(GPIOB, 5, 1);
+            escribir(GPIOB, 6, 0);
+            break;
 
-    if (numero == 0 || numero == 2 || numero == 3 ||
-        numero == 5 || numero == 6 || numero == 8 ||
-        numero == 9)
-        escribir(GPIOB, 3, 0);
-    else
-        escribir(GPIOB, 3, 1);
+        case 3:
+            escribir(GPIOA, 8, 0);
+            escribir(GPIOA, 9, 0);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 0);
+            escribir(GPIOB, 4, 1);
+            escribir(GPIOB, 5, 1);
+            escribir(GPIOB, 6, 0);
+            break;
 
-    if (numero == 0 || numero == 2 ||
-        numero == 6 || numero == 8)
-        escribir(GPIOB, 4, 0);
-    else
-        escribir(GPIOB, 4, 1);
+        case 4:
+            escribir(GPIOA, 8, 1);
+            escribir(GPIOA, 9, 0);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 1);
+            escribir(GPIOB, 4, 1);
+            escribir(GPIOB, 5, 0);
+            escribir(GPIOB, 6, 0);
+            break;
 
-    if (numero == 0 || numero == 4 || numero == 5 ||
-        numero == 6 || numero == 8 || numero == 9)
-        escribir(GPIOB, 5, 0);
-    else
-        escribir(GPIOB, 5, 1);
+        case 5:
+            escribir(GPIOA, 8, 0);
+            escribir(GPIOA, 9, 1);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 0);
+            escribir(GPIOB, 4, 1);
+            escribir(GPIOB, 5, 0);
+            escribir(GPIOB, 6, 0);
+            break;
 
-    if (numero == 2 || numero == 3 || numero == 4 ||
-        numero == 5 || numero == 6 || numero == 8 ||
-        numero == 9)
-        escribir(GPIOB, 6, 0);
-    else
-        escribir(GPIOB, 6, 1);
+        case 6:
+            escribir(GPIOA, 8, 0);
+            escribir(GPIOA, 9, 1);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 0);
+            escribir(GPIOB, 4, 0);
+            escribir(GPIOB, 5, 0);
+            escribir(GPIOB, 6, 0);
+            break;
 
-    escribir(GPIOB, 8, 1);
+        case 7:
+            escribir(GPIOA, 8, 0);
+            escribir(GPIOA, 9, 0);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 1);
+            escribir(GPIOB, 4, 1);
+            escribir(GPIOB, 5, 1);
+            escribir(GPIOB, 6, 1);
+            break;
+
+        case 8:
+            escribir(GPIOA, 8, 0);
+            escribir(GPIOA, 9, 0);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 0);
+            escribir(GPIOB, 4, 0);
+            escribir(GPIOB, 5, 0);
+            escribir(GPIOB, 6, 0);
+            break;
+
+        case 9:
+            escribir(GPIOA, 8, 0);
+            escribir(GPIOA, 9, 0);
+            escribir(GPIOA, 10, 0);
+            escribir(GPIOB, 3, 0);
+            escribir(GPIOB, 4, 1);
+            escribir(GPIOB, 5, 0);
+            escribir(GPIOB, 6, 0);
+            break;
+
+        default:
+            break;
+    }
 }
 
 void retardo(volatile uint32_t ciclos)
 {
     while (ciclos--)
     {
-    }
-}
-
-void mostrar_3_digitos(uint16_t numero)
-{
-    uint8_t centenas;
-    uint8_t decenas;
-    uint8_t unidades;
-
-    centenas = numero / 100;
-    decenas = (numero / 10) % 10;
-    unidades = numero % 10;
-
-    apagar_digitos();
-    mostrar_numero(centenas);
-    escribir(GPIOB, 9, 0);
-    retardo(1000);
-
-    apagar_digitos();
-    mostrar_numero(decenas);
-    escribir(GPIOB, 10, 0);
-    retardo(1000);
-
-    apagar_digitos();
-    mostrar_numero(unidades);
-    escribir(GPIOA, 6, 0);
-    retardo(1000);
-}
-
-void mostrar_3_digitos_250ms(uint16_t numero)
-{
-    uint16_t i;
-
-    for (i = 0; i < 250; i++)
-    {
-        mostrar_3_digitos(numero);
     }
 }
 
