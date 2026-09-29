@@ -1,157 +1,446 @@
+```c
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+
 #include "inc/gpio_config.h"
 #include "inc/system_config.h"
-#include "inc/gpio_config.h"
 
-#define LED_PIN 5 // Pin 5 corresponds to the on-board LED on the NUCLEO-64 board
-#define BUTTON_PIN 13 // Pin 13 corresponds to the on-board button on the NUCLEO-64 board
-
-/*Declaration of two timers made by software updated every 1ms*/
-/*Declaration of two timers made by software updated every 1ms*/
-typedef struct{
-  unsigned int sw_tmr1_count;
-  unsigned int sw_tmr2_count;
-  unsigned int sw_tmr1_period;
-  unsigned int sw_tmr2_period;
-  unsigned int sw_tmr1_flag;
-  unsigned int sw_tmr2_flag;
-} SW_Timers;
-
-/* Must be delcared volatile as the timer can update asynchounosly*/
 volatile SW_Timers timers;
 
+volatile uint32_t period = 0;
+volatile uint32_t duty = 0;
+
+volatile uint32_t frecuencia = 0;
+
+volatile uint8_t digit1 = 0;
+volatile uint8_t digit2 = 0;
+volatile uint8_t digit3 = 0;
+volatile uint8_t digit4 = 0;
+volatile uint8_t digit5 = 0;
 
 
-void update_sw_timers(volatile SW_Timers* timer){
-  timer->sw_tmr1_count++;
-  timer->sw_tmr2_count++;
-  if(timer->sw_tmr1_count==timer->sw_tmr1_period){
-    timer->sw_tmr1_count=0;
-    timer->sw_tmr1_flag=1;
-  }
-  if(timer->sw_tmr2_count==timer->sw_tmr2_period){
-    timer->sw_tmr2_count=0;
-    timer->sw_tmr2_flag=1;
-  }
-}
-
-/*The SysTick_Handler, was already defined as weak during the crt0.s init file, so when we define it here, 
-the Vector table is updated whit the new address where the function is allocated, so that when and interrupt happen
-the vector table knows where to find the SysTick_Handler*/
-void SysTick_Handler(void){
-  update_sw_timers(&timers);
-}
-
-volatile uint32_t period=0, duty=0;
-float freq=0.0, dutyper=0.0;
-
-void TIM5_IRQHandler(void){
-  if(TIM5->SR&TIM_SR_CC1IF){
-    period = TIM5->CCR1;
-    if(period!=0) {
-      duty = TIM5->CCR2;
-    }
-    TIM5->SR&=~TIM_SR_CC1IF;   
-  }
-
-}
-
-void TIM2_PWM_10KHz_Init(void){
-  /*Enable the clock to the timers 2 and 5*/
-  
-  RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
-  volatile unsigned int dummy;
-  dummy =  RCC->APB1ENR;
-  dummy =  RCC->APB1ENR;
-
-  /* Timer2 config as base timer*/
-  TIM2->PSC = 0;             // Prescale to 1MHz
-  TIM2->ARR = 4200-1;         // Timeout at 500ms
-  TIM2->CCR1 = 2100-1;
-  TIM2->CCMR1 |= (6 << TIM_CCMR1_OC1M_Pos) | TIM_CCMR1_OC1PE; 
-  TIM2->CCER |= TIM_CCER_CC1E;
-  TIM2->CR1 |= TIM_CR1_DIR;     // Counter Up
-  TIM2->CR1 |= TIM_CR1_ARPE;    // Autoreload
-  TIM2->CNT = 0;                // restart the counter
-  TIM2->CR1 = TIM_CR1_CEN;      // Enable the timer
-
-}
-
-void TIM5_IC_Init(void){
-  
-  RCC->APB1ENR |= RCC_APB1ENR_TIM5EN;
-  volatile unsigned int dummy;
-  dummy =  RCC->APB1ENR;
-  dummy =  RCC->APB1ENR;
-
-  /* Timer2 config as base timer*/
-  TIM5->PSC = 0;             // Prescale to 42MHz
-  TIM5->ARR = 0xffffffff;         // maximum reload value
- 
-  TIM5->CCMR1 |= (1 << TIM_CCMR1_CC1S_Pos);  // enable Input capture CH1 on TI1
-  TIM5->CCER  &= ~((1<<TIM_CCER_CC1P_Pos) | (1<<TIM_CCER_CC1NP_Pos)); // Capture configured on rising edge
-
-  TIM5->CCMR1 |= (2 << TIM_CCMR1_CC2S_Pos); // Enable Input capture CH2 on same TI1
-  TIM5->CCER  |= ((1<<TIM_CCER_CC2P_Pos) | ((0<<TIM_CCER_CC2NP_Pos))); // Enable capture on falling edge 
-  
-  TIM5->SMCR |= (5<<TIM_SMCR_TS_Pos); // TI1FP1 selected
-  TIM5->SMCR |= (4<<TIM_SMCR_SMS_Pos); //Reset the Timer on every rising capture event
-
-  TIM5->CR1 &= ~TIM_CR1_DIR;     // Counter Up
-  TIM5->CR1 |= TIM_CR1_ARPE;    // Autoreload, this does not 
-  //TIM5->CNT = 0;                // restart the counter
-  TIM5->CCER |= (1<<TIM_CCER_CC1E_Pos) | (1<<TIM_CCER_CC2E_Pos); // Enable cpature CC1 and CC2
-  TIM5->DIER |= (1<<TIM_DIER_CC1IE_Pos); // Enable CC1 interrupt (only on rising edge)
-  TIM5->CR1 |= TIM_CR1_CEN;      // Enable the timer
-
-  NVIC_EnableIRQ(TIM5_IRQn); // Enable the TIM5 IRQ
-
-}
-
-int main()
+void SysTick_Handler(void)
 {
-
-  clock_config();
-  SysTick_Init(1000);
-  SysTick_enable_IrQ(1);
-   
-  timers.sw_tmr1_period = 10;
-  /*Enable the CLK to the GPIOA and GPIOC, this needs to be done before the configuration opf the GPIO*/
-  
-  RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN; // Enable GPIOA clock in RCC_AHB1ENR register (bit 0)
-  RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN; // Enable GPIOC clock in RCC_AHB1ENR register (bit 2)
-  // do two dummy reads after enabling the peripheral clock, as per the errata
-  volatile unsigned int dummy;
-  dummy = (RCC->AHB1ENR);
-  dummy = (RCC->AHB1ENR);
-  
-  GPIO_InitTypeDef GPIO_Init; 
-  GPIO_Init.Pin = (1<<LED_PIN);
-  GPIO_Init.Mode = (2 << GPIO_MODER_MODER5_Pos);
-  GPIO_Init.Speed = (3 << GPIO_OSPEEDR_OSPEED5_Pos);
-  GPIO_Init.Alternate = (1<<GPIO_AFRL_AFSEL5_Pos);
-  GPIO_Config(GPIOA,GPIO_Init);
-
-  GPIO_Init.Pin = (1<<0);
-  GPIO_Init.Mode = (2 << GPIO_MODER_MODER0_Pos);
-  GPIO_Init.Alternate = (2<<GPIO_AFRL_AFSEL0_Pos);
-  GPIO_Config(GPIOA,GPIO_Init);
-
-  GPIO_Init.Pin = (1<<BUTTON_PIN);
-  GPIO_Init.Mode = (0 << GPIO_MODER_MODER13_Pos);
-  GPIO_Config(GPIOC,GPIO_Init);
-
-  TIM2_PWM_10KHz_Init();
-  TIM5_IC_Init();
-
-  while(1)
-  {
-      freq = 42000000.0 / (float)period; 
-      dutyper = ((float) duty / (float) period)*100;
-  }
-
-
+    update_sw_timers(&timers);
 }
+
+
+void TIM5_IRQHandler(void)
+{
+    if(TIM5->SR & TIM_SR_CC1IF)
+    {
+        period = TIM5->CCR1;
+
+        if(period != 0)
+        {
+            duty = TIM5->CCR2;
+        }
+
+        WRITE_REG_FIELD(TIM5->SR, TIM_SR_CC1IF, 0);
+    }
+}
+
+
+void TIM5_IC_Init(void)
+{
+    WRITE_REG_FIELD(
+        RCC->APB1ENR,
+        RCC_APB1ENR_TIM5EN,
+        1
+    );
+
+    volatile unsigned int dummy;
+
+    dummy = RCC->APB1ENR;
+    dummy = RCC->APB1ENR;
+
+
+    /*
+     * TIM5 funciona como contador.
+     * PSC = 0 significa que no se aplica
+     * división adicional al reloj del timer.
+     */
+
+    WRITE_REG(TIM5->PSC, 0);
+
+    /*
+     * Valor máximo del contador.
+     */
+
+    WRITE_REG(TIM5->ARR, 0xffffffff);
+
+
+    /*
+     * CH1 como Input Capture sobre TI1.
+     */
+
+    WRITE_REG_FIELD(
+        TIM5->CCMR1,
+        TIM_CCMR1_CC1S,
+        1
+    );
+
+
+    /*
+     * CH1 captura en flanco de subida.
+     */
+
+    WRITE_REG_FIELD(
+        TIM5->CCER,
+        TIM_CCER_CC1P,
+        0
+    );
+
+    WRITE_REG_FIELD(
+        TIM5->CCER,
+        TIM_CCER_CC1NP,
+        0
+    );
+
+
+    /*
+     * CH2 captura también la entrada TI1.
+     * Se utiliza para obtener el ancho del pulso.
+     */
+
+    WRITE_REG_FIELD(
+        TIM5->CCMR1,
+        TIM_CCMR1_CC2S,
+        2
+    );
+
+
+    /*
+     * CH2 captura en flanco de bajada.
+     */
+
+    WRITE_REG_FIELD(
+        TIM5->CCER,
+        TIM_CCER_CC2P,
+        1
+    );
+
+    WRITE_REG_FIELD(
+        TIM5->CCER,
+        TIM_CCER_CC2NP,
+        0
+    );
+
+
+    /*
+     * TI1FP1 como fuente del trigger.
+     */
+
+    WRITE_REG_FIELD(
+        TIM5->SMCR,
+        TIM_SMCR_TS,
+        5
+    );
+
+
+    /*
+     * El contador se reinicia cada vez
+     * que llega un flanco de subida.
+     */
+
+    WRITE_REG_FIELD(
+        TIM5->SMCR,
+        TIM_SMCR_SMS,
+        4
+    );
+
+
+    /*
+     * Contador ascendente.
+     */
+
+    WRITE_REG_FIELD(
+        TIM5->CR1,
+        TIM_CR1_DIR,
+        0
+    );
+
+
+    WRITE_REG_FIELD(
+        TIM5->CR1,
+        TIM_CR1_ARPE,
+        1
+    );
+
+
+    /*
+     * Habilitar captura de CH1.
+     */
+
+    WRITE_REG_FIELD(
+        TIM5->CCER,
+        TIM_CCER_CC1E,
+        1
+    );
+
+
+    /*
+     * Habilitar captura de CH2.
+     */
+
+    WRITE_REG_FIELD(
+        TIM5->CCER,
+        TIM_CCER_CC2E,
+        1
+    );
+
+
+    /*
+     * Habilitar interrupción de CH1.
+     */
+
+    WRITE_REG_FIELD(
+        TIM5->DIER,
+        TIM_DIER_CC1IE,
+        1
+    );
+
+
+    /*
+     * Encender TIM5.
+     */
+
+    WRITE_REG_FIELD(
+        TIM5->CR1,
+        TIM_CR1_CEN,
+        1
+    );
+
+
+    NVIC_EnableIRQ(TIM5_IRQn);
+}
+
+
+void GPIO_board_config(void)
+{
+    /*
+     * Segmentos de los displays
+     */
+
+    configurar_salida(GPIOA, 8);
+    configurar_salida(GPIOA, 9);
+    configurar_salida(GPIOA, 10);
+
+    configurar_salida(GPIOB, 3);
+    configurar_salida(GPIOB, 4);
+    configurar_salida(GPIOB, 5);
+    configurar_salida(GPIOB, 6);
+
+
+    /*
+     * Selectores de los 5 displays
+     *
+     * PB7  -> Display 1
+     * PB8  -> Display 2
+     * PB9  -> Display 3
+     * PB10 -> Display 4
+     * PA6  -> Display 5
+     */
+
+    configurar_salida(GPIOB, 7);
+    configurar_salida(GPIOB, 8);
+    configurar_salida(GPIOB, 9);
+    configurar_salida(GPIOB, 10);
+
+    configurar_salida(GPIOA, 6);
+
+
+    /*
+     * PA0 = TIM5_CH1
+     *
+     * Aquí llega la señal cuadrada
+     * proveniente del comparador.
+     */
+
+    GPIO_InitTypeDef GPIO_Init;
+
+    GPIO_Init.Pin = 0;
+    GPIO_Init.Mode = 2;
+    GPIO_Init.Pull = 0;
+    GPIO_Init.Speed = 3;
+    GPIO_Init.Alternate = 2;
+
+    GPIO_Config(GPIOA, GPIO_Init);
+}
+
+
+void separar_frecuencia(uint32_t valor)
+{
+    digit1 = valor / 10000;
+
+    digit2 = (valor / 1000) % 10;
+
+    digit3 = (valor / 100) % 10;
+
+    digit4 = (valor / 10) % 10;
+
+    digit5 = valor % 10;
+}
+
+
+void mostrar_frecuencia(void)
+{
+    /*
+     * Display 1
+     */
+
+    apagar_digitos();
+
+    mostrar_numero(digit1);
+
+    escribir(GPIOB, 7, 0);
+
+    retardo(1000);
+
+
+    /*
+     * Display 2
+     */
+
+    apagar_digitos();
+
+    mostrar_numero(digit2);
+
+    escribir(GPIOB, 8, 0);
+
+    retardo(1000);
+
+
+    /*
+     * Display 3
+     */
+
+    apagar_digitos();
+
+    mostrar_numero(digit3);
+
+    escribir(GPIOB, 9, 0);
+
+    retardo(1000);
+
+
+    /*
+     * Display 4
+     */
+
+    apagar_digitos();
+
+    mostrar_numero(digit4);
+
+    escribir(GPIOB, 10, 0);
+
+    retardo(1000);
+
+
+    /*
+     * Display 5
+     */
+
+    apagar_digitos();
+
+    mostrar_numero(digit5);
+
+    escribir(GPIOA, 6, 0);
+
+    retardo(1000);
+}
+
+
+int main(void)
+{
+    /*
+     * Configuración del reloj del sistema.
+     */
+
+    clock_config();
+
+
+    /*
+     * Inicializar SysTick.
+     */
+
+    SysTick_Init(1000);
+
+    SysTick_enable_IrQ(1);
+
+    timers.sw_tmr1_period = 10;
+
+
+    /*
+     * Habilitar reloj de GPIOA.
+     */
+
+    *RCC_AHB1ENR |= (1U << 0);
+
+
+    /*
+     * Habilitar reloj de GPIOB.
+     */
+
+    *RCC_AHB1ENR |= (1U << 1);
+
+
+    /*
+     * Habilitar reloj de GPIOC.
+     */
+
+    *RCC_AHB1ENR |= (1U << 2);
+
+
+    /*
+     * Configuración de GPIO.
+     */
+
+    GPIO_board_config();
+
+
+    /*
+     * Configuración de TIM5
+     * para Input Capture.
+     */
+
+    TIM5_IC_Init();
+
+
+    while(1)
+    {
+        /*
+         * Si ya se detectó un período,
+         * podemos calcular la frecuencia.
+         */
+
+        if(period != 0)
+        {
+            frecuencia = 42000000 / period;
+
+
+            /*
+             * Separar la frecuencia
+             * en cinco dígitos.
+             */
+
+            separar_frecuencia(frecuencia);
+
+
+            /*
+             * Mostrar continuamente
+             * la frecuencia.
+             */
+
+            mostrar_frecuencia();
+        }
+    }
+
+
+    HALT();
+
+    return 0;
+}
+```

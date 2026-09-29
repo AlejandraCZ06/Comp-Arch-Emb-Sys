@@ -1,23 +1,47 @@
 #ifndef __GPIO_CONFIG_H__
 #define __GPIO_CONFIG_H__
-#define STM32F401xE
-#include "stm32f4xx.h"
+
 #include "stdint.h"
 
-typedef struct {
-    uint32_t Mode;
-    uint32_t Pin;
-    uint32_t Pull;
-    uint32_t Speed;
-    uint32_t Alternate;
+typedef struct
+{
+    volatile uint32_t MODER;
+    volatile uint32_t OTYPER;
+    volatile uint32_t OSPEEDR;
+    volatile uint32_t PUPDR;
+    volatile uint32_t IDR;
+    volatile uint32_t ODR;
+    volatile uint32_t BSRR;
+    volatile uint32_t LCKR;
+    volatile uint32_t AFR[2];
+} GPIO_TypeDef;
 
-} GPIO_InitTypeDef;
+#define PERIPH_BASE  0x40000000U
+#define AHB1_BASE    (PERIPH_BASE + 0x20000U)
 
+#define GPIOA_BASE   (AHB1_BASE + 0x0000U)
+#define GPIOB_BASE   (AHB1_BASE + 0x0400U)
+#define GPIOC_BASE   (AHB1_BASE + 0x0800U)
 
-void GPIO_Config(volatile GPIO_TypeDef *GPIOx, GPIO_InitTypeDef Config);
+#define RCC_BASE     (AHB1_BASE + 0x3800U)
 
-uint32_t read_pin_state(volatile GPIO_TypeDef *GPIOx, uint32_t pin);
-void write_pin_state(volatile GPIO_TypeDef *GPIOx, uint32_t pin, uint32_t state);
-void toggle_pin_state(volatile GPIO_TypeDef *GPIOx, uint32_t pin);
+#define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)
+#define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)
+#define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)
 
-#endif // __GPIO_CONFIG_H__
+#define RCC_AHB1ENR ((volatile uint32_t *)(RCC_BASE + 0x30U))
+
+void configurar_salida(GPIO_TypeDef *puerto, uint8_t pin);
+void configurar_entrada_pullup(GPIO_TypeDef *puerto, uint8_t pin);
+void escribir(GPIO_TypeDef *puerto, uint8_t pin, uint8_t valor);
+
+uint8_t leer_dip(void);
+
+void apagar_digitos(void);
+void mostrar_numero(uint8_t numero);
+
+void retardo(volatile uint32_t ciclos);
+
+void HALT(void);
+
+#endif
