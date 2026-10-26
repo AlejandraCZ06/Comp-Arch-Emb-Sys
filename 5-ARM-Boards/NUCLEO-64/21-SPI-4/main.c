@@ -75,6 +75,18 @@ pointd point;
 
 
 void draw_point(uint8_t * Matrix, pointd point){
+  for (uint8_t i=0; i<8; i++){
+    Matrix[i]=0;
+  }
+  for (uint8_t y=0; y<8; y++){
+    for (uint8_t x=0; x<8; x++){
+      int dx = x - xc;
+      int dy = y - yc;
+      int distancia = dx*dx + dy*dy;
+
+      int radio_cuadrado = r*r;
+    }
+  }
   for(uint8_t i=0; i<8; i++){
     Matrix[i] = 0;
     if(point.y == i){
